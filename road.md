@@ -55,3 +55,15 @@ of explosions should be fun !
 # Day 1
 ## 00:30 Implementing a simple particle system
 
+This was a fail. I went to bed at 2AM after an endless battle with the type checker
+and the `rand` create that just did not want to run properly in a web browser.
+
+## 08:00 Making rand work
+
+Finally managed to make rand work using `rand_xorshift` to avoid using any entropy source.
+
+## 09:30 Particles don't die...
+
+Fix the particle system and add text. Now we are ready to do some interesting things !
+
+## 10:00
