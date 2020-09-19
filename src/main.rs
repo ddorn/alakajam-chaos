@@ -3,7 +3,7 @@
 use quicksilver::{
     geom::{Rectangle, Vector, Circle},
     graphics::{Color, VectorFont, FontRenderer},
-    run, Graphics, Input, Result, Settings, Window,
+    run, Graphics, Input, Result, Settings, Window, Timer
 };
 
 use rand::{Rng, RngCore, SeedableRng, distributions::{Uniform, Normal, Distribution}};
@@ -17,19 +17,35 @@ struct Particle {
     pos: Vector,
     speed: f32,
     angle: f32,
+    damp: f32,
+    angular_vel: f32,
     color: Color,
 }
 
 impl Particle {
     fn update(&mut self) -> bool {
         self.pos = self.pos + Vector::from_angle(self.angle) * self.speed;
-        self.speed -= 1.0;
+        self.speed *= self.damp;
+        self.angle += self.angular_vel;
+        self.angle %= 360.0;
+        // self.angular_vel *= self.damp;
 
-        self.speed > 0.0 
+
+        self.speed > 0.5
             && self.pos.x > -100.0
             && self.pos.y > -100.0
             && self.pos.x < 5000.0
             && self.pos.y < 5000.0
+
+    }
+
+    fn draw(&self, gfx: &mut Graphics, prop: f32) {
+        gfx.fill_circle(
+            &Circle::new(
+                self.pos + Vector::from_angle(self.angle) * (self.speed * prop),
+                3.0 * self.speed.sqrt()), 
+            self.color.with_alpha(self.speed / 10.0),
+        );
     }
 }
 
@@ -47,15 +63,17 @@ impl Player {
     fn update(&mut self, rng: &mut XorShiftRng) -> Vec<Particle>
     {
         let angle = Uniform::new(0.0, 360.0);
-        let speed = Normal::new(15.0, 3.0);
-        let hue = Normal::new(36.0, 3.0);
+        let speed = Normal::new(10.0, 1.0);
+        let hue = Normal::new(27.0, 3.0);
 
         let mut ps = vec![];
-        for _ in 0..4 {
+        for _ in 0..6 {
             ps.push(Particle {
                 pos: self.pos,
                 speed: speed.sample(rng) as f32,
                 angle: angle.sample(rng),
+                damp: 0.88,
+                angular_vel: 25.0,
                 color: hsv2rgb(hue.sample(rng) as f32, 1.0, 1.0)
             });
         }
@@ -83,14 +101,14 @@ impl Game {
         }
     }
 
-    fn draw(&mut self, gfx: &mut Graphics) {
+    /// Draw the entire game on the gfx. `prop` is the
+    /// proportion of time between the last update and the next
+    /// prop is in the range 0..1
+    fn draw(&mut self, gfx: &mut Graphics, prop: f32) {
         gfx.clear(self.bg_color);
 
         for p in &self.particles {
-            gfx.fill_circle(
-                &Circle::new(p.pos, 10.0), 
-                p.color
-            );
+            p.draw(gfx, prop);
         }
 
         self.font.draw(gfx, &format!("Particles: {}", self.particles.len()), Color::WHITE, Vector::new(10.0, 50.0)).unwrap();
@@ -98,16 +116,13 @@ impl Game {
 
     fn update(&mut self) {
 
-        self.particles.extend(self.player.update(&mut self.rng));
-
         // Update and remove dead particles
-        let mut new = vec![];
-        for p in &mut self.particles {
-            if p.update() {
-                new.push(p.clone())
-            }
-        }
-        self.particles = new;
+        self.particles = self.particles
+            .iter_mut()
+            .filter_map(|p| if p.update() { Some(p.clone()) } else { None } )
+            .collect();
+
+        self.particles.extend(self.player.update(&mut self.rng));
     }
 }
 
@@ -129,17 +144,30 @@ async fn app(window: Window, mut gfx: Graphics, mut input: Input) -> Result<()> 
 
     let mut game = Game::new(font);
 
+    let mut update_timer = Timer::time_per_second(30.0);
+    let mut draw_timer = Timer::time_per_second(60.0);
+
     // Game loop
     loop {
         // Event handeling
         while let Some(_) = input.next_event().await {
 
         }
-        
-        game.update();
 
-        game.draw(&mut gfx);
-        // Send the data to be drawn
-        gfx.present(&window)?;
+        // We use a while loop rather than an if so that we can try to catch up in the event of having a slow down.
+        while update_timer.tick() {
+            game.update();
+        }
+
+        // Unlike the update cycle drawing doesn't change our state
+        // Because of this there is no point in trying to catch up if we are ever 2 frames late
+        // Instead it is better to drop/skip the lost frames
+        if draw_timer.exhaust().is_some() {
+            let update_prop = update_timer.elapsed().as_secs_f32() / update_timer.period().as_secs_f32();
+
+            game.draw(&mut gfx, update_prop);
+            // Send the data to be drawn
+            gfx.present(&window)?;
+        }
     }
 }

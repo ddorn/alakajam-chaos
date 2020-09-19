@@ -21,12 +21,12 @@ pub fn hsv2rgb(h: f32, s: f32, v: f32) -> Color
     let t = v * (1.0 - (s * (1.0 - ff)));
 
     let (r, g, b) = match i as i8 {
-        0 | _ => (v, t, p),
+        0 => (v, t, p),
         1 => (q, v, p),
         2 => (p, v, t),
         3 => (p, q, v),
         4 => (t, p, v),
-        5 => (v, p, q),
+        5 | _ => (v, p, q),
     };
 
     Color { r, g, b, a: 1.0 }

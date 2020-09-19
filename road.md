@@ -65,5 +65,20 @@ Finally managed to make rand work using `rand_xorshift` to avoid using any entro
 ## 09:30 Particles don't die...
 
 Fix the particle system and add text. Now we are ready to do some interesting things !
+I choosed to use [this font](https://tinyworlds.itch.io/free-pixel-font-thaleah) because
+I like its bold and ambitious feel.
 
-## 10:00
+## 10:00 Start the player class and mor interesting particles
+
+## 11:00
+
+Tried to use the create `game-loop` to have fixed updates, but couldn't compile it
+(we are startin to see a scheme here...), then found out quicksliver had a built in
+thing for this and copied https://github.com/ryanisaacg/quicksilver/blob/master/examples/06_timers.rs
+
+Had some fun tweeking the apearence of the player.
+
+## 11:42 Event
+
+Now I'll try to make my blob go towards the cursor... Time to look at quicksilver's events !
+First thing to realise : Event is not what I'm looking for, put `input` is 
