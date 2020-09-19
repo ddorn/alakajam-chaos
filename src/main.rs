@@ -60,14 +60,22 @@ impl Player {
             pos: Vector::new(200.0, 200.0),
         }
     }
-    fn update(&mut self, rng: &mut XorShiftRng) -> Vec<Particle>
+    fn update(&mut self, input: &Input, rng: &mut XorShiftRng) -> Vec<Particle>
     {
+
+        // Move towards the cursor
+        let mouse = input.mouse().location();
+        let dir = mouse - self.pos;
+        let dist = dir.len().max(1.0);  // Avoid div by 0
+        self.pos += dir * ((dist * 0.1).min(20.0) / dist); // max N pixels, otherwise prop to dist
+
+        // Generate its particles
         let angle = Uniform::new(0.0, 360.0);
-        let speed = Normal::new(10.0, 1.0);
+        let speed = Normal::new(10.0, 3.0);
         let hue = Normal::new(27.0, 3.0);
 
         let mut ps = vec![];
-        for _ in 0..6 {
+        for _ in 0..4 {
             ps.push(Particle {
                 pos: self.pos,
                 speed: speed.sample(rng) as f32,
@@ -114,7 +122,7 @@ impl Game {
         self.font.draw(gfx, &format!("Particles: {}", self.particles.len()), Color::WHITE, Vector::new(10.0, 50.0)).unwrap();
     }
 
-    fn update(&mut self) {
+    fn update(&mut self, input: &Input) {
 
         // Update and remove dead particles
         self.particles = self.particles
@@ -122,7 +130,7 @@ impl Game {
             .filter_map(|p| if p.update() { Some(p.clone()) } else { None } )
             .collect();
 
-        self.particles.extend(self.player.update(&mut self.rng));
+        self.particles.extend(self.player.update(input, &mut self.rng));
     }
 }
 
@@ -156,7 +164,7 @@ async fn app(window: Window, mut gfx: Graphics, mut input: Input) -> Result<()> 
 
         // We use a while loop rather than an if so that we can try to catch up in the event of having a slow down.
         while update_timer.tick() {
-            game.update();
+            game.update(&input);
         }
 
         // Unlike the update cycle drawing doesn't change our state

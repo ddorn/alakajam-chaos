@@ -78,7 +78,16 @@ thing for this and copied https://github.com/ryanisaacg/quicksilver/blob/master/
 
 Had some fun tweeking the apearence of the player.
 
-## 11:42 Event
+## 11:42 Events and Mouse control
 
 Now I'll try to make my blob go towards the cursor... Time to look at quicksilver's events !
-First thing to realise : Event is not what I'm looking for, put `input` is 
+First thing to realise : Event is not what I'm looking for, but `input` is. This was surpisingly
+easy to do, so I now have a blob slowly following my cursor !
+
+## 12:00 Fire !
+
+Right know the blob needs two things : 
+ - Fire deadly missiles
+ - And a proper name
+
+Let's tackle the first one.
