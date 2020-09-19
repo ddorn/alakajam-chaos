@@ -14,12 +14,14 @@ mod particles;
 mod player;
 mod shot;
 mod enemy;
+mod background;
 
 use colors::*;
 use particles::*;
 use player::*;
 use shot::*;
 use enemy::*;
+use background::*;
 
 const SIZE: Vector = Vector { x: 1300.0, y: 800.0 };
 
@@ -51,13 +53,16 @@ pub struct Game {
     paused: bool,
     score: u32,
     shake: i32,
+    bg: Background,
 }
 
 impl Game {
     fn new(font: FontRenderer) -> Self {
+        let mut rng = XorShiftRng::from_seed([42; 16]);
         Game { 
+            bg: Background::new(&mut rng),
             bg_color: Color::from_hex("#020812"),
-            rng: XorShiftRng::from_seed([42; 16]),
+            rng: rng,
             font: font,
 
             particles: vec![],
@@ -81,13 +86,15 @@ impl Game {
             prop = 0.0;
         }
         gfx.clear(self.bg_color);
+        self.bg.draw(gfx, self.score);
 
         if self.shake > 0 {
             self.shake -= 1;
-            let unif = Uniform::new(-15.0, 15.0);
-            let x = unif.sample(&mut self.rng);
-            let y = unif.sample(&mut self.rng);
-            gfx.set_transform(Transform::translate(Vector::new(x, y)));
+            let angle = Uniform::new(0.0, 360.0);
+            let unif = Uniform::new(5.0, 15.0);
+            gfx.set_transform(Transform::translate(
+                Vector::from_angle(angle.sample(&mut self.rng)) * unif.sample(&mut self.rng)
+            ));
         } else {
             gfx.set_transform(Transform::IDENTITY);
         }
@@ -132,6 +139,8 @@ Skip: {}",
     }
 
     fn update(&mut self, mouse: Vector) {
+        self.bg.update(self.score);
+
         if self.paused { return; }
         if self.player.life == 0 { return; }
 
@@ -203,6 +212,7 @@ Skip: {}",
                             self.frame = 0;
                             self.paused = false;
                             self.score = 0;
+                            self.bg = Background::new(&mut self.rng);
                         }
                         _ => (),
                     }

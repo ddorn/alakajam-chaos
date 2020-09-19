@@ -152,11 +152,15 @@ Player::update(game). It's not very clean but *it works*.
 
 Let's start some polish, and add bright explosions when a blob dies.
 
-## 22:00 Shakes
+## 22:00 Shakes and background
+
+Shakes where quite easy to do, there is a built in transform applied to everything in quicksilver ! Let's try do do a background that is more and more chaotic as the score increases.
+
+## 23:30 Power ups
+
 
 # TODO: Polish
 - Pause on dark bg, with yellow particles on each side
 - bg depending on the score
 - Better css for the help
 - Keep only important text, put colors and center what is needed
-- make the game shake when the player is hit

@@ -41,8 +41,8 @@ impl Player {
             for e in &game.enemies {
                 if (e.pos - game.player.pos).len2() < (e.radius + game.player.radius).powi(2) {
                     game.player.life -= 1;
-                    game.player.invincible = 15;  // half a second
-                    game.shake += 6;
+                    game.player.invincible = 30;  // 2/3 of a second
+                    game.shake += 12;
                     break; // Only one life per frame
                 }
             }

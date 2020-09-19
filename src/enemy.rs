@@ -73,6 +73,9 @@ impl Enemy {
                 self.alive = false;
                 kill_dir = Some(s.vel);
 
+                game.shake += 1;
+                game.bg.chaos(&mut game.rng);
+
 
                 let angle = Normal::new(s.vel.angle() as f64, 40.0);
                 let speed = Normal::new(60.0, 12.0);
