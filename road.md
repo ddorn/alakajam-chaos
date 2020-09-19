@@ -152,10 +152,10 @@ Player::update(game). It's not very clean but *it works*.
 
 Let's start some polish, and add bright explosions when a blob dies.
 
+## 22:00 Shakes
 
 # TODO: Polish
 - Pause on dark bg, with yellow particles on each side
-- explosion when a blob dies
 - bg depending on the score
 - Better css for the help
 - Keep only important text, put colors and center what is needed

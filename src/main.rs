@@ -1,6 +1,6 @@
 use quicksilver::{
-    geom::{Vector},
-    graphics::{Color, VectorFont, FontRenderer},
+    geom::{Vector, Transform},
+    graphics::{Color, VectorFont, FontRenderer, },
     input::{Event, Key},
     run, Graphics, Input, Result, Settings, Window, Timer,
 };
@@ -50,6 +50,7 @@ pub struct Game {
     frame: u32,
     paused: bool,
     score: u32,
+    shake: i32,
 }
 
 impl Game {
@@ -67,6 +68,7 @@ impl Game {
             paused: false,
             score: 0,
             frame: 0,
+            shake: 0,
         }
     }
 
@@ -79,6 +81,16 @@ impl Game {
             prop = 0.0;
         }
         gfx.clear(self.bg_color);
+
+        if self.shake > 0 {
+            self.shake -= 1;
+            let unif = Uniform::new(-15.0, 15.0);
+            let x = unif.sample(&mut self.rng);
+            let y = unif.sample(&mut self.rng);
+            gfx.set_transform(Transform::translate(Vector::new(x, y)));
+        } else {
+            gfx.set_transform(Transform::IDENTITY);
+        }
 
         for p in &self.particles {
             p.draw(gfx, prop);
