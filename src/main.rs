@@ -12,32 +12,43 @@ mod colors;
 mod particles;
 mod player;
 mod shot;
+mod enemy;
 
 use colors::*;
 use particles::*;
 use player::*;
 use shot::*;
+use enemy::*;
 
 const SIZE: Vector = Vector { x: 1300.0, y: 800.0 };
 
 struct Game {
-    particles: Vec<Particle>,
+    // Utilities
     bg_color: Color,
     rng: XorShiftRng,
     font: FontRenderer,
+    // Entities
+    particles: Vec<Particle>,
     player: Player,
+    enemies: Vec<Enemy>,
     shots: Vec<Shot>,
+
+    score: u32,
 }
 
 impl Game {
     fn new(font: FontRenderer) -> Self {
         Game { 
-            particles: vec![],
             bg_color: Color::from_hex("#020812"),
             rng: XorShiftRng::from_seed([42; 16]),
             font: font,
+
+            particles: vec![],
             player: Player::new(),
             shots: vec![],
+            enemies: vec![ Enemy::new(Vector::ONE * 500.0, 20.0)],
+
+            score: 0,
         }
     }
 
@@ -62,6 +73,8 @@ impl Game {
     fn update(&mut self, input: &Input, mouse: Vector) {
 
         // Update and remove dead particles
+        // We do it first so particles added this frame can
+        // be drawn where they spawn at least once
         self.particles = self.particles
             .iter_mut()
             .filter_map(|p| if p.update() { Some(p.clone()) } else { None } )
@@ -76,6 +89,16 @@ impl Game {
             .filter_map(|s| if s.alive() { Some(s.clone()) } else { None })
             .collect();
 
+        // Update and remove enemies
+        for e in &mut self.enemies {
+            self.particles.extend(e.update(&self.player, &mut self.rng));
+        }
+        self.enemies = self.enemies
+            .iter()
+            .filter_map(|s| if s.alive { Some(s.clone()) } else { None })
+            .collect();
+
+        // Update the player
         self.particles.extend(self.player.update(mouse, &mut self.rng));
     }
 
