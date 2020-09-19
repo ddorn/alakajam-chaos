@@ -137,3 +137,10 @@ We'll first try to have them split. And maybe showing the score would be a good 
 While coding the pause I've found something funny : when I render the
 game, I interpolate the time between two updates, but since the game
 is not moving on pause it only make the particles jitter.
+
+
+
+# TODO: Polish
+- Pause on dark bg, with yellow particles on each side
+- explosion when a blob dies
+- bg depending on the score

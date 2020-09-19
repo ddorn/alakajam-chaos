@@ -1,11 +1,11 @@
 use quicksilver::{
     geom::{Vector},
-    graphics::{Color, VectorFont, FontRenderer, ResizeHandler},
+    graphics::{Color, VectorFont, FontRenderer},
     input::{Event, Key},
     run, Graphics, Input, Result, Settings, Window, Timer,
 };
 
-use rand::{Rng, RngCore, SeedableRng, distributions::{Uniform, Normal, Distribution}};
+use rand::{SeedableRng, distributions::{Uniform, Normal, Distribution}};
 use rand_xorshift::XorShiftRng;
 use std::mem::swap;
 
@@ -23,6 +23,9 @@ use enemy::*;
 
 const SIZE: Vector = Vector { x: 1300.0, y: 800.0 };
 
+fn sqrti(x: u32) -> u32 {
+    (x as f64).sqrt() as u32
+}
 
 /// Return whether a vector is in the screen, with a 50 pixels margin
 fn in_screen(pos: &Vector) -> bool {
@@ -98,14 +101,13 @@ impl Game {
         }
     }
 
-    fn update(&mut self, input: &Input, mouse: Vector) {
+    fn update(&mut self, mouse: Vector) {
         if self.paused { return; }
 
         self.frame += 1;
 
-        if self.frame % 42 == 17 {
-            self.spawn_enemy();
-        }
+        // Spawn enemies if needed
+        self.spawn_enemy();
 
         // Update and remove dead particles
         // We do it first so particles added this frame can
@@ -126,12 +128,13 @@ impl Game {
 
         // Update and remove enemies
         let mut enn = vec![];
+        let mut new_enn = vec![];
         swap(&mut enn, &mut self.enemies);
         self.enemies = enn
             .iter()
             .filter_map(|e| {
                 let mut e = e.clone();
-                e.update(self);
+                new_enn.extend(e.update(self));
 
                 if e.alive {
                     Some(e)
@@ -141,6 +144,7 @@ impl Game {
                 }
             })
             .collect();
+        self.enemies.extend(new_enn);
 
         // Update the player
         self.particles.extend(self.player.update(mouse, &mut self.rng));
@@ -172,6 +176,8 @@ impl Game {
     }
 
     fn spawn_enemy(&mut self) {
+        if self.frame % (42 + sqrti(self.score)) != 17 {return;}
+
         // Find a position out of the screen
         let unif = Uniform::new(-500.0, 2000.0);
         let mut pos = Vector::ZERO;
@@ -180,8 +186,11 @@ impl Game {
             pos.y = unif.sample(&mut self.rng);
         }
 
+        let unif = Uniform::new_inclusive(1, (self.score as f64).sqrt() as usize / 4 + 2);
+        let life = unif.sample(&mut self.rng);
+
         self.enemies.push(
-            Enemy::new(pos, 1)
+            Enemy::new(pos, life as u32)
         );
     }
 }
@@ -223,7 +232,7 @@ async fn app(window: Window, mut gfx: Graphics, mut input: Input) -> Result<()> 
 
         // We use a while loop rather than an if so that we can try to catch up in the event of having a slow down.
         while update_timer.tick() {
-            game.update(&input, mouse);
+            game.update(mouse);
         }
 
         // Unlike the update cycle drawing doesn't change our state
