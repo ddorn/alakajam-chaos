@@ -65,7 +65,8 @@ body {
 }
 
 aside {
-    margin: auto;
+	min-width: 300px;
+	justify-self: center;
 }
 
 canvas {

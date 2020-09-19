@@ -132,4 +132,8 @@ The enemies are still not very interesting so it's time to make them interesting
 
 ## 18:00 Make enemies interesting
 
-We'll first try to have them split. And maybe showing the score would be a good idea !
+We'll first try to have them split. And maybe showing the score would be a good idea, along with a pause key !
+
+While coding the pause I've found something funny : when I render the
+game, I interpolate the time between two updates, but since the game
+is not moving on pause it only make the particles jitter.

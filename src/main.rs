@@ -1,7 +1,7 @@
 use quicksilver::{
     geom::{Vector},
     graphics::{Color, VectorFont, FontRenderer, ResizeHandler},
-    input::Event,
+    input::{Event, Key},
     run, Graphics, Input, Result, Settings, Window, Timer,
 };
 
@@ -43,8 +43,9 @@ pub struct Game {
     player: Player,
     enemies: Vec<Enemy>,
     shots: Vec<Shot>,
-
+    // General
     frame: u32,
+    paused: bool,
     score: u32,
 }
 
@@ -60,6 +61,7 @@ impl Game {
             shots: vec![],
             enemies: vec![ Enemy::new(Vector::ONE * 500.0, 1)],
 
+            paused: false,
             score: 0,
             frame: 0,
         }
@@ -68,7 +70,11 @@ impl Game {
     /// Draw the entire game on the gfx. `prop` is the
     /// proportion of time between the last update and the next
     /// prop is in the range 0..1
-    fn draw(&mut self, gfx: &mut Graphics, prop: f32, render_skip: usize) {
+    fn draw(&mut self, gfx: &mut Graphics, mut prop: f32, render_skip: usize) {
+        if self.paused {
+            // Otherwise things jitter when paused.
+            prop = 0.0;
+        }
         gfx.clear(self.bg_color);
 
         for p in &self.particles {
@@ -77,13 +83,24 @@ impl Game {
 
         self.font.draw(
             gfx, 
-            &format!("Particles: {} \nSkip: {}", self.particles.len(), render_skip), 
+            &format!("Score: {}\nParticles: {} \nSkip: {}", self.score, self.particles.len(), render_skip), 
             Color::WHITE, 
             Vector::new(10.0, 50.0)
         ).unwrap();
+
+        if self.paused {
+            self.font.draw(
+                gfx, 
+                &"Paused !", 
+                Color::YELLOW, 
+                Vector::new(SIZE.x / 2.0 - 140.0, SIZE.y / 2.0),
+            ).unwrap();
+        }
     }
 
     fn update(&mut self, input: &Input, mouse: Vector) {
+        if self.paused { return; }
+
         self.frame += 1;
 
         if self.frame % 42 == 17 {
@@ -138,8 +155,20 @@ impl Game {
                     );
                 }
             },
+            Event::KeyboardInput(e) => {
+                if e.is_down() {
+                    match e.key() {
+                        Key::P => self.toggle_pause(),
+                        _ => (),
+                    }
+                }
+            }
             _ => ()
         }
+    }
+
+    fn toggle_pause(&mut self) {
+        self.paused = !self.paused;
     }
 
     fn spawn_enemy(&mut self) {

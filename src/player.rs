@@ -3,7 +3,7 @@ use quicksilver::{
     graphics::{Color},
     Input,
 };
-use rand::{Rng, RngCore, SeedableRng, distributions::{Uniform, Normal, Distribution}};
+use rand::{distributions::{Uniform, Normal, Distribution}};
 use rand_xorshift::XorShiftRng;
 
 use super::{Particle, Shape, hsv2rgb, Shot};
@@ -25,8 +25,10 @@ impl Player {
 
         // Move towards the cursor
         let dir = mouse - self.pos;
-        let dist = dir.len().max(1.0);  // Avoid div by 0
-        self.pos += dir * ((dist * 0.2) / dist); // max N pixels, otherwise prop to dist
+        let dist = dir.len();
+        if dist > 1.0 {
+            self.pos += dir * 0.2;
+        }
 
         // Generate its particles
         let angle = Uniform::new(0.0, 360.0);
