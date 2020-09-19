@@ -1,7 +1,8 @@
 use quicksilver::{
     geom::{Vector},
     graphics::{Color, VectorFont, FontRenderer},
-    run, Graphics, Input, Result, Settings, Window, Timer
+    input::Event,
+    run, Graphics, Input, Result, Settings, Window, Timer,
 };
 
 use rand::{Rng, RngCore, SeedableRng, distributions::{Uniform, Normal, Distribution}};
@@ -10,10 +11,12 @@ use rand_xorshift::XorShiftRng;
 mod colors;
 mod particles;
 mod player;
+mod shot;
 
 use colors::hsv2rgb;
 use particles::Particle;
 use player::Player;
+use shot::Shot;
 
 struct Game {
     particles: Vec<Particle>,
@@ -21,6 +24,7 @@ struct Game {
     rng: XorShiftRng,
     font: FontRenderer,
     player: Player,
+    shots: Vec<Shot>,
 }
 
 impl Game {
@@ -31,6 +35,7 @@ impl Game {
             rng: XorShiftRng::from_seed([42; 16]),
             font: font,
             player: Player::new(),
+            shots: vec![],
         }
     }
 
@@ -55,7 +60,29 @@ impl Game {
             .filter_map(|p| if p.update() { Some(p.clone()) } else { None } )
             .collect();
 
+        // Update and remove shots
+        for s in &mut self.shots {
+            self.particles.extend(s.update())
+        }
+        self.shots = self.shots
+            .iter()
+            .filter_map(|s| if s.alive() { Some(s.clone()) } else { None })
+            .collect();
+
         self.particles.extend(self.player.update(input, &mut self.rng));
+    }
+
+    fn event(&mut self, event: Event, input: &Input) {
+        match event {
+            Event::PointerInput(p) => {
+                if p.is_down() {
+                    self.shots.push(
+                        self.player.fire(input.mouse().location())
+                    );
+                }
+            },
+            _ => ()
+        }
     }
 }
 
@@ -83,8 +110,8 @@ async fn app(window: Window, mut gfx: Graphics, mut input: Input) -> Result<()> 
     // Game loop
     loop {
         // Event handeling
-        while let Some(_) = input.next_event().await {
-
+        while let Some(event) = input.next_event().await {
+            game.event(event, &input)
         }
 
         // We use a while loop rather than an if so that we can try to catch up in the event of having a slow down.

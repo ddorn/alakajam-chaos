@@ -91,3 +91,5 @@ Right know the blob needs two things :
  - And a proper name
 
 Let's tackle the first one. But first separate the project in different files.
+
+Now it's time to look at events.

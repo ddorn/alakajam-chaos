@@ -8,7 +8,7 @@ use rand_xorshift::XorShiftRng;
 
 use super::Particle;
 use super::hsv2rgb;
-
+use super::Shot;
 
 pub struct Player {
     pub pos: Vector,
@@ -48,5 +48,9 @@ impl Player {
         }
 
         ps
+    }
+
+    pub fn fire(&self, aim: Vector) -> Shot {
+        Shot::new(self.pos, (aim - self.pos).with_len(30.0))
     }
 }
