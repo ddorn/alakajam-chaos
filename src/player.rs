@@ -20,11 +20,10 @@ impl Player {
             pos: Vector::new(200.0, 200.0),
         }
     }
-    pub fn update(&mut self, input: &Input, rng: &mut XorShiftRng) -> Vec<Particle>
+    pub fn update(&mut self, mouse: Vector, rng: &mut XorShiftRng) -> Vec<Particle>
     {
 
         // Move towards the cursor
-        let mouse = input.mouse().location();
         let dir = mouse - self.pos;
         let dist = dir.len().max(1.0);  // Avoid div by 0
         self.pos += dir * ((dist * 0.2) / dist); // max N pixels, otherwise prop to dist

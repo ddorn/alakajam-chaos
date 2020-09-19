@@ -18,7 +18,7 @@ use particles::*;
 use player::*;
 use shot::*;
 
-const SIZE: Vector = Vector { x: 800.0, y: 600.0 };
+const SIZE: Vector = Vector { x: 1300.0, y: 800.0 };
 
 struct Game {
     particles: Vec<Particle>,
@@ -59,7 +59,7 @@ impl Game {
         ).unwrap();
     }
 
-    fn update(&mut self, input: &Input) {
+    fn update(&mut self, input: &Input, mouse: Vector) {
 
         // Update and remove dead particles
         self.particles = self.particles
@@ -76,15 +76,15 @@ impl Game {
             .filter_map(|s| if s.alive() { Some(s.clone()) } else { None })
             .collect();
 
-        self.particles.extend(self.player.update(input, &mut self.rng));
+        self.particles.extend(self.player.update(mouse, &mut self.rng));
     }
 
-    fn event(&mut self, event: Event, input: &Input) {
+    fn event(&mut self, event: Event, input: &Input, mouse: Vector) {
         match event {
             Event::PointerInput(p) => {
                 if p.is_down() {
                     self.shots.push(
-                        self.player.fire(input.mouse().location())
+                        self.player.fire(mouse)
                     );
                 }
             },
@@ -113,12 +113,6 @@ async fn app(window: Window, mut gfx: Graphics, mut input: Input) -> Result<()> 
 
     let mut game = Game::new(font);
 
-    let resize_handler = ResizeHandler::Fit {
-        aspect_width: 4.0,
-        aspect_height: 3.0,
-    };
-    gfx.set_resize_handler(resize_handler);
-
     let mut update_timer = Timer::time_per_second(30.0);
     let mut draw_timer = Timer::time_per_second(60.0);
 
@@ -127,14 +121,16 @@ async fn app(window: Window, mut gfx: Graphics, mut input: Input) -> Result<()> 
     
     // Game loop
     loop {
+        let mouse = gfx.screen_to_camera(&window, input.mouse().location());
+
         // Event handeling
         while let Some(event) = input.next_event().await {
-            game.event(event, &input)
+            game.event(event, &input, mouse)
         }
 
         // We use a while loop rather than an if so that we can try to catch up in the event of having a slow down.
         while update_timer.tick() {
-            game.update(&input);
+            game.update(&input, mouse);
         }
 
         // Unlike the update cycle drawing doesn't change our state

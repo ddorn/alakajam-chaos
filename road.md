@@ -109,4 +109,8 @@ Now that I like the firing, I don't really know what to do. I'm definetly not go
 Since I don't have any idea, i'll fix what has been anoying me since I opend my first window: wrong game size and white borders. Let's head over
 [10_resize.rs](https://docs.rs/crate/quicksilver/0.4.0-alpha0.7/source/examples/10_resize.rs). 
 But this was to simple to work, and if you read the description carefully
-you will see *"doesn't work on the web"* ! Well, time for some css and html then !
+you will see *"doesn't work on the web"* ! Well, time for some css and html then ! I have trouble giving the right size to the canvas, but I'll maybe fix that later.
+
+## 16:00
+
+Let's make some enemies that go towards the player (maybe that look like ships ?)
