@@ -1,7 +1,5 @@
-// Example 1: The Square
-// Open a window, and draw a colored square in it
 use quicksilver::{
-    geom::{Rectangle, Vector, Circle},
+    geom::{Vector},
     graphics::{Color, VectorFont, FontRenderer},
     run, Graphics, Input, Result, Settings, Window, Timer
 };
@@ -10,85 +8,12 @@ use rand::{Rng, RngCore, SeedableRng, distributions::{Uniform, Normal, Distribut
 use rand_xorshift::XorShiftRng;
 
 mod colors;
-use colors::*;
+mod particles;
+mod player;
 
-#[derive(Copy, Clone, Debug)]
-struct Particle {
-    pos: Vector,
-    speed: f32,
-    angle: f32,
-    damp: f32,
-    angular_vel: f32,
-    color: Color,
-}
-
-impl Particle {
-    fn update(&mut self) -> bool {
-        self.pos = self.pos + Vector::from_angle(self.angle) * self.speed;
-        self.speed *= self.damp;
-        self.angle += self.angular_vel;
-        self.angle %= 360.0;
-        // self.angular_vel *= self.damp;
-
-
-        self.speed > 0.5
-            && self.pos.x > -100.0
-            && self.pos.y > -100.0
-            && self.pos.x < 5000.0
-            && self.pos.y < 5000.0
-
-    }
-
-    fn draw(&self, gfx: &mut Graphics, prop: f32) {
-        gfx.fill_circle(
-            &Circle::new(
-                self.pos + Vector::from_angle(self.angle) * (self.speed * prop),
-                3.0 * self.speed.sqrt()), 
-            self.color.with_alpha(self.speed / 10.0),
-        );
-    }
-}
-
-struct Player {
-    pos: Vector,
-}
-
-
-impl Player {
-    fn new() -> Self {
-        Player {
-            pos: Vector::new(200.0, 200.0),
-        }
-    }
-    fn update(&mut self, input: &Input, rng: &mut XorShiftRng) -> Vec<Particle>
-    {
-
-        // Move towards the cursor
-        let mouse = input.mouse().location();
-        let dir = mouse - self.pos;
-        let dist = dir.len().max(1.0);  // Avoid div by 0
-        self.pos += dir * ((dist * 0.1).min(20.0) / dist); // max N pixels, otherwise prop to dist
-
-        // Generate its particles
-        let angle = Uniform::new(0.0, 360.0);
-        let speed = Normal::new(10.0, 3.0);
-        let hue = Normal::new(27.0, 3.0);
-
-        let mut ps = vec![];
-        for _ in 0..4 {
-            ps.push(Particle {
-                pos: self.pos,
-                speed: speed.sample(rng) as f32,
-                angle: angle.sample(rng),
-                damp: 0.88,
-                angular_vel: 25.0,
-                color: hsv2rgb(hue.sample(rng) as f32, 1.0, 1.0)
-            });
-        }
-
-        ps
-    }
-}
+use colors::hsv2rgb;
+use particles::Particle;
+use player::Player;
 
 struct Game {
     particles: Vec<Particle>,

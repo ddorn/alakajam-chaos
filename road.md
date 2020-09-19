@@ -90,4 +90,4 @@ Right know the blob needs two things :
  - Fire deadly missiles
  - And a proper name
 
-Let's tackle the first one.
+Let's tackle the first one. But first separate the project in different files.
