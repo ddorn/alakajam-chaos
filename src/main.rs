@@ -1,6 +1,6 @@
 use quicksilver::{
     geom::{Vector},
-    graphics::{Color, VectorFont, FontRenderer},
+    graphics::{Color, VectorFont, FontRenderer, ResizeHandler},
     input::Event,
     run, Graphics, Input, Result, Settings, Window, Timer,
 };
@@ -13,10 +13,12 @@ mod particles;
 mod player;
 mod shot;
 
-use colors::hsv2rgb;
-use particles::Particle;
-use player::Player;
-use shot::Shot;
+use colors::*;
+use particles::*;
+use player::*;
+use shot::*;
+
+const SIZE: Vector = Vector { x: 800.0, y: 600.0 };
 
 struct Game {
     particles: Vec<Particle>,
@@ -42,14 +44,19 @@ impl Game {
     /// Draw the entire game on the gfx. `prop` is the
     /// proportion of time between the last update and the next
     /// prop is in the range 0..1
-    fn draw(&mut self, gfx: &mut Graphics, prop: f32) {
+    fn draw(&mut self, gfx: &mut Graphics, prop: f32, render_skip: usize) {
         gfx.clear(self.bg_color);
 
         for p in &self.particles {
             p.draw(gfx, prop);
         }
 
-        self.font.draw(gfx, &format!("Particles: {}", self.particles.len()), Color::WHITE, Vector::new(10.0, 50.0)).unwrap();
+        self.font.draw(
+            gfx, 
+            &format!("Particles: {} \nSkip: {}", self.particles.len(), render_skip), 
+            Color::WHITE, 
+            Vector::new(10.0, 50.0)
+        ).unwrap();
     }
 
     fn update(&mut self, input: &Input) {
@@ -62,7 +69,7 @@ impl Game {
 
         // Update and remove shots
         for s in &mut self.shots {
-            self.particles.extend(s.update())
+            self.particles.extend(s.update(&mut self.rng));
         }
         self.shots = self.shots
             .iter()
@@ -91,7 +98,9 @@ impl Game {
 fn main() {
     run(
         Settings {
+            size: SIZE,
             title: "Square Example",
+            resizable: true,
             ..Settings::default()
         },
         app,
@@ -104,9 +113,18 @@ async fn app(window: Window, mut gfx: Graphics, mut input: Input) -> Result<()> 
 
     let mut game = Game::new(font);
 
+    let resize_handler = ResizeHandler::Fit {
+        aspect_width: 4.0,
+        aspect_height: 3.0,
+    };
+    gfx.set_resize_handler(resize_handler);
+
     let mut update_timer = Timer::time_per_second(30.0);
     let mut draw_timer = Timer::time_per_second(60.0);
 
+    let mut render_skip = 0;
+
+    
     // Game loop
     loop {
         // Event handeling
@@ -122,10 +140,15 @@ async fn app(window: Window, mut gfx: Graphics, mut input: Input) -> Result<()> 
         // Unlike the update cycle drawing doesn't change our state
         // Because of this there is no point in trying to catch up if we are ever 2 frames late
         // Instead it is better to drop/skip the lost frames
-        if draw_timer.exhaust().is_some() {
+        if let Some(frames) = draw_timer.exhaust() {
+            render_skip += match frames.get() {
+                0 | 1 => 0,
+                s => s - 2,
+            };
+
             let update_prop = update_timer.elapsed().as_secs_f32() / update_timer.period().as_secs_f32();
 
-            game.draw(&mut gfx, update_prop);
+            game.draw(&mut gfx, update_prop, render_skip);
             // Send the data to be drawn
             gfx.present(&window)?;
         }

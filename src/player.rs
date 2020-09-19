@@ -6,10 +6,9 @@ use quicksilver::{
 use rand::{Rng, RngCore, SeedableRng, distributions::{Uniform, Normal, Distribution}};
 use rand_xorshift::XorShiftRng;
 
-use super::Particle;
-use super::hsv2rgb;
-use super::Shot;
+use super::{Particle, Shape, hsv2rgb, Shot};
 
+#[derive(Debug)]
 pub struct Player {
     pub pos: Vector,
 }
@@ -28,7 +27,7 @@ impl Player {
         let mouse = input.mouse().location();
         let dir = mouse - self.pos;
         let dist = dir.len().max(1.0);  // Avoid div by 0
-        self.pos += dir * ((dist * 0.05) / dist); // max N pixels, otherwise prop to dist
+        self.pos += dir * ((dist * 0.2) / dist); // max N pixels, otherwise prop to dist
 
         // Generate its particles
         let angle = Uniform::new(0.0, 360.0);
@@ -41,8 +40,10 @@ impl Player {
                 pos: self.pos,
                 speed: speed.sample(rng) as f32,
                 angle: angle.sample(rng),
+                accel: -0.1,
                 damp: 0.88,
                 angular_vel: 25.0,
+                shape: Shape::Circle(4.0),
                 color: hsv2rgb(hue.sample(rng) as f32, 1.0, 1.0)
             });
         }
@@ -51,6 +52,6 @@ impl Player {
     }
 
     pub fn fire(&self, aim: Vector) -> Shot {
-        Shot::new(self.pos, (aim - self.pos).with_len(30.0))
+        Shot::new(self.pos, (aim - self.pos).with_len(45.0))
     }
 }

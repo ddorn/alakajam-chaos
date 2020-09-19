@@ -1,7 +1,7 @@
 use quicksilver::geom::Vector;
 use std::f32::consts::PI;
-use super::Particle;
-use super::Color;
+use rand::distributions::{Distribution, Normal, Uniform};
+use super::{Particle, Color, XorShiftRng, Shape };
 
 
 #[derive(Copy, Clone, Debug)]
@@ -18,17 +18,23 @@ impl Shot {
         }
     }
 
-    pub fn update(&mut self) -> Vec<Particle> {
+    pub fn update(&mut self, rng: &mut XorShiftRng) -> Vec<Particle> {
         self.pos += self.vel;
 
         // Generate particles
+        let angle = Normal::new(self.vel.angle() as f64 + 180.0, 10.0);
+        let speed = Normal::new(15.0, 1.0);
+        // let angular_vel = Normal::new(4.0, 1.0);
 
-        (0..2).map(|_| Particle {
+        (0..1).map(|_| Particle {
             pos: self.pos,
-            speed: 10.0,
-            angle: self.vel.angle() + PI,
-            damp: 0.8,
+            speed: speed.sample(rng) as f32,
+            angle: self.vel.angle(),
+            accel: -4.0,
+            damp: 1.0,
             angular_vel: 0.0,
+            // angular_vel: angular_vel.sample(rng) as f32,
+            shape: Shape::Shard(1.0, 3.0),
             color: Color::RED,
         }).collect()
     }
@@ -36,8 +42,8 @@ impl Shot {
     pub fn alive(&self) -> bool {
         self.pos.x > -100.0
         && self.pos.y > -100.0
-        && self.pos.x < 5000.0
-        && self.pos.y < 5000.0
+        && self.pos.x < 2000.0
+        && self.pos.y < 2000.0
 
     }
 }

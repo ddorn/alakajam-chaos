@@ -93,3 +93,20 @@ Right know the blob needs two things :
 Let's tackle the first one. But first separate the project in different files.
 
 Now it's time to look at events.
+
+
+## 14:00 Shard shots
+
+Shots would be better in the shape of a shard... Let's look into the meshes...
+
+This went very well, I think I could do lots of things easily with
+those meshes. 
+
+## 15:00 Fixing window size.
+
+Now that I like the firing, I don't really know what to do. I'm definetly not going for maps, and idk about ships. Maybe the player will have to bring Chaos to its world, as asked by the Jellymancer. 
+
+Since I don't have any idea, i'll fix what has been anoying me since I opend my first window: wrong game size and white borders. Let's head over
+[10_resize.rs](https://docs.rs/crate/quicksilver/0.4.0-alpha0.7/source/examples/10_resize.rs). 
+But this was to simple to work, and if you read the description carefully
+you will see *"doesn't work on the web"* ! Well, time for some css and html then !
