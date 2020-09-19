@@ -138,9 +138,18 @@ While coding the pause I've found something funny : when I render the
 game, I interpolate the time between two updates, but since the game
 is not moving on pause it only make the particles jitter.
 
+Fixed a few things (shot multiple blobs at the same frame, ...)
 
+## 20:00 Player life
+
+This is a very important thing to implement : life. It should be quite easy to do, but I'm a bit too lazy to make a state machine for the game.
+
+Added a restart with R
 
 # TODO: Polish
 - Pause on dark bg, with yellow particles on each side
 - explosion when a blob dies
 - bg depending on the score
+- Better css for the help
+- Keep only important text, put colors and center what is needed
+- make the game shake when the player is hit

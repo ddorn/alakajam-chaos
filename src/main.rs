@@ -74,7 +74,7 @@ impl Game {
     /// proportion of time between the last update and the next
     /// prop is in the range 0..1
     fn draw(&mut self, gfx: &mut Graphics, mut prop: f32, render_skip: usize) {
-        if self.paused {
+        if self.paused || self.player.life == 0 {
             // Otherwise things jitter when paused.
             prop = 0.0;
         }
@@ -86,12 +86,28 @@ impl Game {
 
         self.font.draw(
             gfx, 
-            &format!("Score: {}\nParticles: {} \nSkip: {}", self.score, self.particles.len(), render_skip), 
+            &format!(
+                "Score: {}
+Life: {}
+Particles: {}
+Skip: {}", 
+                self.score, 
+                "<3 ".repeat(self.player.life as usize),
+                self.particles.len(), 
+                render_skip,
+            ), 
             Color::WHITE, 
             Vector::new(10.0, 50.0)
         ).unwrap();
 
-        if self.paused {
+        if self.player.life == 0 {
+            self.font.draw(
+                gfx, 
+                &"GAME OVER", 
+                Color::RED, 
+                Vector::new(SIZE.x / 2.0 - 170.0, SIZE.y / 2.0),
+            ).unwrap();
+        } else if self.paused {
             self.font.draw(
                 gfx, 
                 &"Paused !", 
@@ -103,6 +119,7 @@ impl Game {
 
     fn update(&mut self, mouse: Vector) {
         if self.paused { return; }
+        if self.player.life == 0 { return; }
 
         self.frame += 1;
 
@@ -147,7 +164,7 @@ impl Game {
         self.enemies.extend(new_enn);
 
         // Update the player
-        self.particles.extend(self.player.update(mouse, &mut self.rng));
+        Player::update(mouse, self);
     }
 
     fn event(&mut self, event: Event, input: &Input, mouse: Vector) {
@@ -163,6 +180,16 @@ impl Game {
                 if e.is_down() {
                     match e.key() {
                         Key::P => self.toggle_pause(),
+                        Key::R => {
+                            // Entities
+                            self.player = Player::new();
+                            self.enemies = vec![];
+                            self.shots = vec![];
+                            // General
+                            self.frame = 0;
+                            self.paused = false;
+                            self.score = 0;
+                        }
                         _ => (),
                     }
                 }

@@ -32,7 +32,7 @@ impl Shot {
         let speed = Normal::new(15.0, 1.0);
         // let angular_vel = Normal::new(4.0, 1.0);
 
-        (0..1).map(|_| Particle {
+        (0..2).map(|_| Particle {
             pos: self.pos,
             speed: speed.sample(rng) as f32,
             angle: self.vel.angle(),
