@@ -62,7 +62,7 @@ impl Game {
             particles: vec![],
             player: Player::new(),
             shots: vec![],
-            enemies: vec![ Enemy::new(Vector::ONE * 500.0, 1)],
+            enemies: vec![ Enemy::new(Vector::ONE * -50.0, 5)],
 
             paused: false,
             score: 0,
@@ -89,10 +89,12 @@ impl Game {
             &format!(
                 "Score: {}
 Life: {}
+Enemies: {}
 Particles: {}
 Skip: {}", 
                 self.score, 
                 "<3 ".repeat(self.player.life as usize),
+                self.enemies.len(),
                 self.particles.len(), 
                 render_skip,
             ), 
@@ -183,7 +185,7 @@ Skip: {}",
                         Key::R => {
                             // Entities
                             self.player = Player::new();
-                            self.enemies = vec![];
+                            self.enemies = vec![ Enemy::new(Vector::ONE * -50.0, 5)];
                             self.shots = vec![];
                             // General
                             self.frame = 0;

@@ -9,6 +9,7 @@ use super::{Particle, Shape, hsv2rgb, Shot, Player, Game};
 
 const KNOCK_BACK: f32 = 40.0;
 const KNOCK_DAMP: f32 = 0.7;
+const DIE_SHARDS: usize = 3;
 
 
 #[derive(Copy, Clone, Debug)]
@@ -71,11 +72,28 @@ impl Enemy {
                 s.alive = false;
                 self.alive = false;
                 kill_dir = Some(s.vel);
+
+
+                let angle = Normal::new(s.vel.angle() as f64, 40.0);
+                let speed = Normal::new(60.0, 12.0);
+                for _ in 0..DIE_SHARDS {
+                    // let angle = 360.0 * (i as f32) / (DIE_SHARDS as f32);
+                    game.particles.push(Particle {
+                        pos: self.pos,
+                        speed: speed.sample(&mut game.rng) as f32,
+                        damp: 0.8,
+                        angle: angle.sample(&mut game.rng) as f32,
+                        shape: Shape::Shard(0.2, 3.0, true),
+                        color: Color::WHITE.with_alpha(0.8),
+                        ..Particle::default()
+                    })
+                }
             }
         }
 
         // Generate particles
-        game.particles.extend(self.particles(&mut game.rng));
+        let density = 1 + (game.enemies.len() > 30) as i32;
+        game.particles.extend(self.particles(&mut game.rng, density));
 
 
         if !self.alive && self.life > 1 {
@@ -91,7 +109,7 @@ impl Enemy {
         }
     }
 
-    fn particles(&self, rng: &mut XorShiftRng) -> Vec<Particle> {
+    fn particles(&self, rng: &mut XorShiftRng, density: i32) -> Vec<Particle> {
 
 
         let colors = vec![
@@ -108,7 +126,7 @@ impl Enemy {
 
         let l = self.life as f32;
 
-        (0..1).map(|_| Particle {
+        (0..density).map(|_| Particle {
             pos: self.pos,
             speed: 5.0 + l * 2.0,
             angle: angle.sample(rng),

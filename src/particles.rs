@@ -5,8 +5,8 @@ use quicksilver::graphics::{Color, Graphics, Vertex, Mesh, Element};
 pub enum Shape {
     /// Circle(size)
     Circle(f32),
-    /// Shard(size, ratio)
-    Shard(f32, f32)
+    /// Shard(size, ratio, use_particle_color)
+    Shard(f32, f32, bool)
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -19,6 +19,21 @@ pub struct Particle {
     pub angular_vel: f32,
     pub shape: Shape,
     pub color: Color,
+}
+
+impl Default for Particle {
+    fn default() -> Self { 
+        Particle {
+            pos: Vector::ZERO,
+            speed: 0.0,
+            angle: 0.0,
+            damp: 1.0,
+            accel: 0.0,
+            angular_vel: 0.0,
+            shape: Shape::Circle(1.0),
+            color: Color::WHITE,
+        }
+     }
 }
 
 impl Particle {
@@ -49,7 +64,7 @@ impl Particle {
                     self.color.with_alpha(self.speed / 10.0),
                 );
             }
-            Shape::Shard(size, ratio) => {
+            Shape::Shard(size, ratio, use_color) => {
                 let vertices = {
                     let vel = Vector::from_angle(self.angle) * self.speed * size;
                     let cross = Vector::new(-vel.y, vel.x);
@@ -57,22 +72,22 @@ impl Particle {
                     let front = Vertex {
                         pos: self.pos + vel,
                         uv: None,
-                        color: Color::GREEN,
+                        color: if use_color { self.color } else { Color::GREEN },
                     };
                     let left = Vertex {
                         pos: self.pos + cross,
                         uv: None,
-                        color: Color::RED,
+                        color: if use_color { self.color } else { Color::RED },
                     };
                     let right = Vertex {
                         pos: self.pos - cross,
                         uv: None,
-                        color: Color::ORANGE,
+                        color: if use_color { self.color } else { Color::ORANGE } ,
                     };
                     let back = Vertex {
                         pos: self.pos - vel * ratio,
                         uv: None,
-                        color: Color::BLUE.with_alpha(0.0),
+                        color: if use_color { self.color } else { Color::BLUE.with_alpha(0.0) },
                     };
 
                     vec![front, left, right, back]

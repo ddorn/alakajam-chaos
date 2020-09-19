@@ -144,7 +144,14 @@ Fixed a few things (shot multiple blobs at the same frame, ...)
 
 This is a very important thing to implement : life. It should be quite easy to do, but I'm a bit too lazy to make a state machine for the game.
 
-Added a restart with R
+Added a restart with R, fought again the double borrow checker when I 
+want to do game.player.update(game), and I finially decided to just do
+Player::update(game). It's not very clean but *it works*.
+
+## 21:00 Explosions
+
+Let's start some polish, and add bright explosions when a blob dies.
+
 
 # TODO: Polish
 - Pause on dark bg, with yellow particles on each side
