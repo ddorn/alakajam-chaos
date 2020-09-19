@@ -111,6 +111,25 @@ Since I don't have any idea, i'll fix what has been anoying me since I opend my 
 But this was to simple to work, and if you read the description carefully
 you will see *"doesn't work on the web"* ! Well, time for some css and html then ! I have trouble giving the right size to the canvas, but I'll maybe fix that later.
 
-## 16:00
+## 16:00 Basic Enemy
 
-Let's make some enemies that go towards the player (maybe that look like ships ?)
+Let's make some enemies that go towards the player (maybe that look like ships ?). I dont think I will make them look like ship, since I probably wont have the time anyway.
+
+Now that a simple enemy is made, I think they could be slime-like enemies,
+spawning two when you kill one. It could maybe even be an inifinite slime,
+and you'll have to try to kill as many as you can, and it would get strong
+instead of weaker when you kill it... :think:
+
+I will have to revise the shoot and aim though, I have the filling that it
+is frustrating but in a non-fun way.
+
+## 17:00 Spawn, different enemy types
+
+Time to make some of them apear, have different characteristics and to be able to shoot them !
+
+After some borrow checker hassle, I finally got away by using `swap`. 
+The enemies are still not very interesting so it's time to make them interesting !
+
+## 18:00 Make enemies interesting
+
+We'll first try to have them split. And maybe showing the score would be a good idea !

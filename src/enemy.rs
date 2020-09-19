@@ -1,12 +1,11 @@
 use quicksilver::{
     geom::{Vector},
     graphics::{Color},
-    Input,
 };
-use rand::{Rng, RngCore, SeedableRng, distributions::{Uniform, Normal, Distribution}};
+use rand::{distributions::{Uniform, Normal, Distribution}};
 use rand_xorshift::XorShiftRng;
 
-use super::{Particle, Shape, hsv2rgb, Shot, Player};
+use super::{Particle, Shape, hsv2rgb, Shot, Player, Game};
 
 
 #[derive(Copy, Clone, Debug)]
@@ -16,50 +15,54 @@ pub struct Enemy {
     pub angle: f32,
     pub alive: bool,
     pub radius: f32,
+    pub life: u32,
 }
 
 impl Enemy {
-    pub fn new(pos: Vector, radius: f32) -> Self {
+    pub fn new(pos: Vector, life: u32) -> Self {
         Enemy {
             pos: pos,
-            speed: 0.0,
+            speed: 6.0,
             angle: 0.0,
             alive: true,
-            radius: radius,
+            life: life,
+            radius: life as f32 * 5.0 + 30.0 ,
         }
     }
 
-    pub fn update(&mut self, player: &Player, rng: &mut XorShiftRng) -> Vec<Particle> {
+    pub fn update(&mut self, game: &mut Game) {
 
-        // Move
-        let player_dir = player.pos - self.pos;
+        // Move and update speed + angle
+        let player_dir = game.player.pos - self.pos;
         let player_angle = player_dir.angle();
 
-
-
-        let angular_diff = ((player_angle - self.angle) % 360.0 + 180.0) % 360.0 - 180.0;
+        let angular_diff = ((player_angle - self.angle) % 360.0 + 540.0) % 360.0 - 180.0;
         self.angle = (self.angle + 0.1 * angular_diff) % 360.0;
 
         let vel = Vector::from_angle(self.angle) * self.speed;
-        self.speed = 4.0;
-        // self.speed = (self.speed + 0.5).max(10.0);
-
         self.pos += vel;
-        // Update velocity to target the player
-        // TODO...
+
+        for s in &mut game.shots {
+            if (s.pos - self.pos).len2() < (s.radius + self.radius).powi(2) {
+                s.alive = false;
+                self.alive = false;
+            }
+        }
 
         // Generate particles
         let angle = Uniform::new(0.0, 360.0);
 
-        (0..2).map(|_| Particle {
+        let ps : Vec<Particle> = (0..2).map(|_| Particle {
             pos: self.pos,
             speed: 7.0,
-            angle: angle.sample(rng),
+            angle: angle.sample(&mut game.rng),
             damp: 1.0,
             accel: -0.8,
             angular_vel: 0.0,
             shape: Shape::Circle(3.0),
             color: Color::PURPLE,
-        }).collect()
+        }).collect();
+
+        game.particles.extend(ps);
     }
 }
