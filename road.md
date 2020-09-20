@@ -168,6 +168,9 @@ Last thing I want to do before going to sleep is a better text.
 Wow that took me a long time, I'm proabably too exhausted to code well
 but it looks quite good !
 
+## 3:30 Various small fix
+
+I hade a pause text appearing on the first frame, too much ugly text...
 
 # TODO: Polish
 - bg depending on the score

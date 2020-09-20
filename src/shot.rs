@@ -29,12 +29,12 @@ impl Shot {
          (0..1).map(|_| Particle {
             pos: self.pos,
             speed: speed.sample(rng) as f32,
-            angle: self.vel.angle(),
-            accel: -4.0,
+            angle: 180.0 + self.vel.angle(),
+            accel: -5.0,
             damp: 1.0,
             angular_vel: 0.0,
             // angular_vel: angular_vel.sample(rng) as f32,
-            shape: Shape::Shard(1.0, 3.0, false),
+            shape: Shape::Shard(-1.0, 3.0, false),
             color: Color::RED,
         }).collect()
         

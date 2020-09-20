@@ -58,7 +58,7 @@ impl Enemy {
         let angular_diff = ((player_angle - self.angle) % 360.0 + 540.0) % 360.0 - 180.0;
         self.angle = (self.angle + 0.05 * angular_diff) % 360.0;
 
-        self.speed = (self.speed + 0.4).min(6.0 - (self.life as f32) * 0.5);
+        self.speed = (self.speed + 0.4).min(8.0 - (self.life as f32).max(6.0) * 0.7);
         let vel = Vector::from_angle(self.angle) * self.speed;
         self.pos += vel;
 
