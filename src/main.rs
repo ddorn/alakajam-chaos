@@ -16,6 +16,7 @@ mod shot;
 mod enemy;
 mod background;
 mod overlay;
+mod powerup;
 
 use colors::*;
 use particles::*;
@@ -24,6 +25,7 @@ use shot::*;
 use enemy::*;
 use background::*;
 use overlay::*;
+use powerup::*;
 
 
 const SIZE: Vector = Vector { x: 1300.0, y: 800.0 };

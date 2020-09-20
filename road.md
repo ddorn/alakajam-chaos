@@ -172,7 +172,16 @@ but it looks quite good !
 
 I hade a pause text appearing on the first frame, too much ugly text...
 
+## 10:00 That was a too short night
+
+Made some nice looking html/css to surround the game.
+
+## 11:30 
+But now it is time to implement powerups !
+
+
+
 # TODO: Polish
-- bg depending on the score
-- Better css for the help
 - Keep only important text, put colors and center what is needed
+- bg: add random triangles ?
+- music !

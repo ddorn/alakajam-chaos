@@ -50,29 +50,79 @@ table {
 }
 
 /* LA C A MOI */
+@font-face {
+    font-family: 'ThaleahFat';
+    src: url('ThaleahFat.woff2') format('woff2'),
+        url('ThaleahFat.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
 
 body {
 	background: rgb(25, 23, 31);
 	color: aliceblue;
+	font-family: "ThaleahFat", sans-serif;
+	font-size: 22px;
 
-    display: flex;
-    flex-flow: row;
+	width: 1300px;
+	margin: 0 auto;
+    /* display: flex;
+    flex-direction: column;
     justify-items: center;
     align-items: center;
 
     width: 100vw;
-    height: 100vh;
+    height: 100vh; */
 }
 
 aside {
-	min-width: 300px;
+	/* min-width: 300px; */
 	justify-self: center;
+	padding-top: 1rem;
+	/* width: 1300px; */
+}
+
+h1 {
+	font-size: 60px;
+	text-align: center;
 }
 
 canvas {
-	/* padding: auto; */
+	margin: auto;
 	border: 2px solid orange;
 	width: 1300px;
 	height: 800px;
 	
+}
+
+p {
+	padding-top: 0.5rem;
+}
+
+.yellow {
+	color: yellow;
+}
+
+.fit {
+	text-align: center;
+}
+
+li {
+	display: inline;
+	padding: 0 1rem;
+}
+
+ul {
+	display: flex;
+	justify-content: center;
+}
+
+.key {
+	color: palegoldenrod;
+}
+
+a {
+	color: orange;
 }
