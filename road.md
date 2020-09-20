@@ -184,8 +184,18 @@ plus I can't find a good create to play music on web.
 
 ## 12:00
 
-But now it is time to implement powerups !
+But now it is time to implement powerups ! That was a lot of code change,
+but now the game feels waaay better ! Though it became way to easy, the 
+curve is just bad. We'll see what I can do.
 
+## 15:00
+
+Time to fix the difficulty curve, also known as "play a lot and sometimes change values".
+
+What I'll do:
+ - Make enemies have life points instead of just a level
+ - Make them invincible on knockback
+ - Damage powerup
 
 
 # TODO: Polish
@@ -193,3 +203,6 @@ But now it is time to implement powerups !
 - bg: add random triangles ?
 - music !
 - make the player shoot al direction on life losStandardStandardt
+- give life to enemies != level
+- make a boss fight => power up
+- look at the difficulty curve

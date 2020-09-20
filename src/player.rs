@@ -16,6 +16,7 @@ pub struct Player {
     pub invincible: i32,
     pub shots: i32,
     pub pierce: i32,
+    pub damage: i32,
 }
 
 
@@ -28,6 +29,7 @@ impl Player {
             invincible: 0,
             shots: 1,
             pierce: 1,
+            damage: 1,
         }
     }
 
@@ -84,21 +86,17 @@ impl Player {
                 self.pos, 
                 Vector::from_angle(a) * SHOT_SPEED,
                 self.pierce,
+                self.damage,
             )
         }).collect()
     }
 
     pub fn powerup(&mut self, up: Power) -> Vec<Particle> {
         match up {
-            Power::LifeUp => {
-                self.life += 1;
-            },
-            Power::PierceUp => {
-                self.pierce += 1;
-            },
-            Power::ShotUp => {
-                self.shots += 1;
-            },
+            Power::LifeUp => self.life += 1,
+            Power::PierceUp => self.pierce += 1,
+            Power::ShotUp => self.shots += 1,
+            Power::DamageUp => self.damage += 1,
         };
 
         vec![]

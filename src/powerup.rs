@@ -10,6 +10,7 @@ pub enum Power {
     LifeUp,
     PierceUp,
     ShotUp,
+    DamageUp,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -50,6 +51,7 @@ impl PowerUp {
             Power::LifeUp => Color::from_hex("#26A65B"),
             Power::PierceUp => Color::from_hex("#BF55EC"),
             Power::ShotUp => Color::from_hex("#F22613"),
+            Power::DamageUp => Color::ORANGE,
         }
     }
 

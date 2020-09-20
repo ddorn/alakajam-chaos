@@ -10,16 +10,18 @@ pub struct Shot {
     pub radius: f32,
     pub alive: bool,
     pub pierce: i32,
+    pub damage: i32,
 }
 
 impl Shot {
-    pub fn new(pos: Vector, vel: Vector, pierce: i32) -> Self {
+    pub fn new(pos: Vector, vel: Vector, pierce: i32, damage: i32) -> Self {
         Shot {
             pos,
             vel,
             radius: 15.0,
             alive: true,
-            pierce: pierce
+            pierce: pierce,
+            damage: damage,
         }
     }
 

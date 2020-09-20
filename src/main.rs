@@ -104,7 +104,7 @@ impl Game {
         // Shakes
 
         if self.shake > 0 {
-            self.shake -= 1;
+            self.shake = (self.shake - 1).min(20);
             let angle = Uniform::new(0.0, 360.0);
             let unif = Uniform::new(5.0, 15.0);
             gfx.set_transform(Transform::translate(
@@ -206,10 +206,10 @@ impl Game {
                 let mut e = e.clone();
                 new_enn.extend(e.update(self));
 
-                if e.alive {
+                if e.alive() {
                     Some(e)
                 } else {
-                    self.score += 1;
+                    self.score += e.level;
                     None
                 }
             })
@@ -306,8 +306,10 @@ impl Game {
                 Power::LifeUp,
                 Power::LifeUp,
                 Power::LifeUp,
+                Power::LifeUp,
                 Power::ShotUp,
                 Power::PierceUp,
+                Power::DamageUp,
             ].iter().choose(&mut self.rng).unwrap();
             self.powerups.push(PowerUp::new(p, &mut self.rng));
         }
