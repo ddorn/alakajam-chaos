@@ -199,12 +199,16 @@ What I'll do:
 
  ## 16:30 Add waves
 
- 
+ A bit lost doing other things in the way but it's there
+
+ ## 19:00
 
 
 # TODO: Polish
-- bg: add random triangles ?
-- music !
 - make the player shoot al direction on life losStandardStandardt
 - make a boss fight => power up
 - look at the difficulty curve
+
+- make enemies move like boids
+- bg: add random triangles ?
+- music !

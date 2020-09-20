@@ -11,3 +11,4 @@ quicksilver = { version = "0.4.0-alpha0.6", features = [] }
 rand = { version = "0.7.3", features = [] }
 rand_xorshift = "0.2.0"
 rand_distr = "0.3.0"
+# quad-snd = { git = "https://github.com/not-fl3/quad-snd" }

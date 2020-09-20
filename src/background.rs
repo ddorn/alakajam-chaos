@@ -43,7 +43,7 @@ impl Background {
         let mut a = 0.0;
         Background {
             t: 0.0,
-            points: (0..200).map(|i| {
+            points: (0..230).map(|i| {
                 a += angle.sample(rng);
                 BgPoint {
                     pos: SIZE / 2.0 + Vector::from_angle(i as f32 * 10.0) * i as f32 * 3.0,

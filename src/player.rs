@@ -29,9 +29,9 @@ impl Player {
             life: 3,
             radius: 30.0,
             invincible: 0,
-            shots: 5,
-            pierce: 5,
-            damage: 5,
+            shots: 1,
+            pierce: 1,
+            damage: 1,
             shoot_delay: SHOT_DELAY,
         }
     }
@@ -53,6 +53,10 @@ impl Player {
                     game.player.life -= 1;
                     game.player.invincible = 30;  // 2/3 of a second
                     game.shake += 12;
+
+                    if game.player.life > 0 {
+                        game.shots.extend(game.player.shot_hit());
+                    }
                     break; // Only one life per frame
                 }
             }
@@ -97,6 +101,20 @@ impl Player {
                 self.pierce,
                 self.damage,
             )
+        }).collect()
+    }
+
+    pub fn shot_hit(&self) -> Vec<Shot> {
+
+        (0..7).map(|i| {
+            let angle = 360.0 * i as f32 / 7.0;
+            Shot::new(
+                self.pos, 
+                Vector::from_angle(angle) * SHOT_SPEED,
+                self.pierce * 10,
+                self.damage * 3,
+            )
+
         }).collect()
     }
 

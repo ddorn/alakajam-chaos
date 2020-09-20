@@ -31,9 +31,13 @@ use powerup::*;
 
 const SIZE: Vector = Vector { x: 1300.0, y: 800.0 };
 
-fn sqrti(x: u32) -> u32 {
-    (x as f64).sqrt() as u32
-}
+// const BOOM_BYTES: &'static [u8] = include_bytes!("sound/boom.wav");
+// const LASER_BYTES: &'static [u8] = include_bytes!("sound/laser.wav");
+// const POWERUP_BYTES: &'static [u8] = include_bytes!("sound/powerup.wav");
+
+// const BOOM: usize = 0;
+// const LASER: usize = 1;
+// const POWERUP: usize = 2;
 
 /// Return whether a vector is in the screen, with a 50 pixels margin
 fn in_screen(pos: &Vector) -> bool {
@@ -73,6 +77,7 @@ pub struct Game {
     wave_state: WaveState,
     bg: Background,
     overlay: Overlay,
+    // sounds: Vec<Sound>
 }
 
 impl Game {
@@ -91,12 +96,13 @@ impl Game {
             powerups: vec![],
 
             paused: false,
-            wave: 4,
+            wave: 0,
             wave_state: WaveState::PowerUp,
             score: 0,
             frame: 0,
             shake: 0,
             overlay: Overlay::pause(),
+            // mixer: SoundMixer::new(),
         };
         g.overlay.visible = false;
 
@@ -359,7 +365,7 @@ impl Game {
     }
 
     fn spawn_powerup(&mut self) {
-        let b = Bernoulli::from_ratio(1, 30 * 60).unwrap();
+        let b = Bernoulli::from_ratio(1, 30 * 20).unwrap();
         if b.sample(&mut self.rng) {
             let &p = vec![
                 Power::LifeUp,
@@ -381,7 +387,7 @@ fn main() {
     run(
         Settings {
             size: SIZE,
-            title: "Square Example",
+            title: "Chaos",
             resizable: true,
             ..Settings::default()
         },
