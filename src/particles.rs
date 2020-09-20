@@ -1,4 +1,4 @@
-use quicksilver::geom::{Vector, Circle, Triangle };
+use quicksilver::geom::{Vector, Circle};
 use quicksilver::graphics::{Color, Graphics, Vertex, Mesh, Element};
 
 #[derive(Copy, Clone, Debug)]
@@ -17,8 +17,10 @@ pub struct Particle {
     pub damp: f32,
     pub accel: f32,
     pub angular_vel: f32,
+    pub bias: Vector,
     pub shape: Shape,
     pub color: Color,
+    pub alpha_scale: f32,
 }
 
 impl Default for Particle {
@@ -30,15 +32,17 @@ impl Default for Particle {
             damp: 1.0,
             accel: 0.0,
             angular_vel: 0.0,
+            bias: Vector::ZERO,
             shape: Shape::Circle(1.0),
             color: Color::WHITE,
+            alpha_scale: 10.0,
         }
      }
 }
 
 impl Particle {
     pub fn update(&mut self) -> bool {
-        self.pos = self.pos + Vector::from_angle(self.angle) * self.speed;
+        self.pos = self.pos + Vector::from_angle(self.angle) * self.speed + self.bias;
 
         self.speed = (self.speed + self.accel) * self.damp;
 
@@ -61,7 +65,7 @@ impl Particle {
                     &Circle::new(
                         self.pos + Vector::from_angle(self.angle) * (self.speed * prop),
                         size * self.speed.sqrt()), 
-                    self.color.with_alpha(self.speed / 10.0),
+                    self.color.with_alpha(self.speed / self.alpha_scale),
                 );
             }
             Shape::Shard(size, ratio, use_color) => {

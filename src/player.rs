@@ -1,12 +1,12 @@
 use quicksilver::{
     geom::{Vector},
-    graphics::{Color},
-    Input,
 };
-use rand::{distributions::{Uniform, Normal, Distribution}};
+use rand_distr::*;
 use rand_xorshift::XorShiftRng;
 
-use super::{Particle, Shape, hsv2rgb, Shot, Enemy, Game};
+use super::{Particle, Shape, hsv2rgb, Shot, Power, Game};
+
+const SHOT_SPEED: f32 = 45.0;
 
 #[derive(Debug)]
 pub struct Player {
@@ -14,6 +14,8 @@ pub struct Player {
     pub life: usize,
     pub radius: f32,
     pub invincible: i32,
+    pub shots: i32,
+    pub pierce: i32,
 }
 
 
@@ -24,8 +26,11 @@ impl Player {
             life: 3,
             radius: 30.0,
             invincible: 0,
+            shots: 1,
+            pierce: 1,
         }
     }
+
     pub fn update(mouse: Vector, game: &mut Game) {
 
         // Move towards the cursor
@@ -53,8 +58,8 @@ impl Player {
 
         // Generate its particles
         let angle = Uniform::new(0.0, 360.0);
-        let speed = Normal::new(10.0, 3.0);
-        let hue = Normal::new(27.0, 3.0);
+        let speed = Normal::new(10.0, 3.0).unwrap();
+        let hue = Normal::new(27.0, 3.0).unwrap();
 
         (0..4).map(|_| Particle {
             pos: self.pos,
@@ -64,11 +69,38 @@ impl Player {
             damp: 0.88,
             angular_vel: 25.0,
             shape: Shape::Circle(4.0),
-            color: hsv2rgb(hue.sample(rng) as f32, 1.0, 1.0)
+            color: hsv2rgb(hue.sample(rng) as f32, 1.0, 1.0),
+            ..Particle::default()
         }).collect()
     }
 
-    pub fn fire(&self, aim: Vector) -> Shot {
-        Shot::new(self.pos, (aim - self.pos).with_len(45.0))
+    pub fn fire(&self, aim: Vector) -> Vec<Shot> {
+        let angle =(aim - self.pos).angle();
+
+        (0..self.shots).map(|i| {
+            let a = angle - 15.0 * (i as f32 - self.shots as f32 / 2.0);
+
+            Shot::new(
+                self.pos, 
+                Vector::from_angle(a) * SHOT_SPEED,
+                self.pierce,
+            )
+        }).collect()
+    }
+
+    pub fn powerup(&mut self, up: Power) -> Vec<Particle> {
+        match up {
+            Power::LifeUp => {
+                self.life += 1;
+            },
+            Power::PierceUp => {
+                self.pierce += 1;
+            },
+            Power::ShotUp => {
+                self.shots += 1;
+            },
+        };
+
+        vec![]
     }
 }

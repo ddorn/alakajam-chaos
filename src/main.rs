@@ -5,7 +5,8 @@ use quicksilver::{
     run, Graphics, Input, Result, Settings, Window, Timer,
 };
 
-use rand::{SeedableRng, distributions::{Uniform, Normal, Distribution}};
+use rand::prelude::*;
+use rand_distr::*;
 use rand_xorshift::XorShiftRng;
 use std::mem::swap;
 
@@ -53,6 +54,7 @@ pub struct Game {
     player: Player,
     enemies: Vec<Enemy>,
     shots: Vec<Shot>,
+    powerups: Vec<PowerUp>,
     // General
     frame: u32,
     paused: bool,
@@ -75,6 +77,7 @@ impl Game {
             player: Player::new(),
             shots: vec![],
             enemies: vec![ Enemy::new(Vector::ONE * -50.0, 5)],
+            powerups: vec![],
 
             paused: false,
             score: 0,
@@ -90,13 +93,15 @@ impl Game {
     /// Draw the entire game on the gfx. `prop` is the
     /// proportion of time between the last update and the next
     /// prop is in the range 0..1
-    fn draw(&mut self, gfx: &mut Graphics, mut prop: f32, render_skip: usize) {
+    fn draw(&mut self, gfx: &mut Graphics, prop: f32, _render_skip: usize) {
         if self.paused || self.player.life == 0 {
             // Otherwise things jitter when paused.
-            prop = 0.0;
+            // prop = 0.0;
         }
         gfx.clear(self.bg_color);
         self.bg.draw(gfx, self.score);
+
+        // Shakes
 
         if self.shake > 0 {
             self.shake -= 1;
@@ -109,7 +114,13 @@ impl Game {
             gfx.set_transform(Transform::IDENTITY);
         }
 
+        // Particles and poweups
+
         for p in &self.particles {
+            p.draw(gfx, prop);
+        }
+
+        for p in &self.powerups {
             p.draw(gfx, prop);
         }
 
@@ -131,7 +142,7 @@ impl Game {
         let life = "<3".repeat(self.player.life);
         self.font.draw(
             gfx, &life, Color::RED, 
-            Vector::new(SIZE.x - life.len() as f32 * 36.0 - 10.0, 40.0)).unwrap();
+            Vector::new(SIZE.x - self.player.life as f32 * 60.0 - 10.0, 50.0)).unwrap();
 
         self.overlay.draw(gfx, &mut self.font);
     }
@@ -158,18 +169,23 @@ impl Game {
         for e in &self.enemies {
             self.particles.extend(e.particles(&mut self.rng, density));
         }
+        for p in &self.powerups {
+            self.particles.extend(p.particles(&mut self.rng));
+        }
 
 
 
         if self.player.life == 0 { return; }
         if self.paused { return; }
 
+
         self.overlay.visible = false;
 
         self.frame += 1;
 
-        // Spawn enemies if needed
+        // Spawn enemies and powerups if needed
         self.spawn_enemy();
+        self.spawn_powerup();
 
         // Update and remove shots
         for s in &mut self.shots {
@@ -200,6 +216,15 @@ impl Game {
             .collect();
         self.enemies.extend(new_enn);
 
+        // Update powerups
+        for p in &mut self.powerups {
+            p.update(&mut self.player);
+        }
+        self.powerups = self.powerups
+            .iter()
+            .filter_map(|p| if p.hits > 0 { Some(p.clone()) } else { None })
+            .collect();
+
         // Update the player
         Player::update(mouse, self);
 
@@ -208,11 +233,11 @@ impl Game {
         }
     }
 
-    fn event(&mut self, event: Event, input: &Input, mouse: Vector) {
+    fn event(&mut self, event: Event, mouse: Vector) {
         match event {
             Event::PointerInput(p) => {
                 if p.is_down() {
-                    self.shots.push(
+                    self.shots.extend(
                         self.player.fire(mouse)
                     );
                 }
@@ -228,6 +253,7 @@ impl Game {
                             self.player = Player::new();
                             self.enemies = vec![ Enemy::new(Vector::ONE * -50.0, 5)];
                             self.shots = vec![];
+                            self.powerups = vec![];
                             // General
                             self.frame = 0;
                             self.paused = false;
@@ -272,6 +298,20 @@ impl Game {
             Enemy::new(pos, life as u32)
         );
     }
+
+    fn spawn_powerup(&mut self) {
+        let b = Bernoulli::from_ratio(1, 30 * 5).unwrap();
+        if b.sample(&mut self.rng) {
+            let &p = vec![
+                Power::LifeUp,
+                Power::LifeUp,
+                Power::LifeUp,
+                Power::ShotUp,
+                Power::PierceUp,
+            ].iter().choose(&mut self.rng).unwrap();
+            self.powerups.push(PowerUp::new(p, &mut self.rng));
+        }
+    }
 }
 
 
@@ -306,7 +346,7 @@ async fn app(window: Window, mut gfx: Graphics, mut input: Input) -> Result<()> 
 
         // Event handeling
         while let Some(event) = input.next_event().await {
-            game.event(event, &input, mouse)
+            game.event(event, mouse)
         }
 
         // We use a while loop rather than an if so that we can try to catch up in the event of having a slow down.

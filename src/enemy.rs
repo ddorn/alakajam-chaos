@@ -2,10 +2,10 @@ use quicksilver::{
     geom::{Vector},
     graphics::{Color},
 };
-use rand::{distributions::{Uniform, Normal, Distribution}};
+use rand_distr::*;
 use rand_xorshift::XorShiftRng;
 
-use super::{Particle, Shape, hsv2rgb, Shot, Player, Game};
+use super::{Particle, Shape, Game};
 
 const KNOCK_BACK: f32 = 40.0;
 const KNOCK_DAMP: f32 = 0.7;
@@ -68,8 +68,8 @@ impl Enemy {
         // Check collisions
         let mut kill_dir = None;
         for s in &mut game.shots {
-            if s.alive && (s.pos - self.pos).len2() < (s.radius + self.radius).powi(2) {
-                s.alive = false;
+            if s.pierce > 0 && (s.pos - self.pos).len2() < (s.radius + self.radius).powi(2) {
+                s.pierce -= 1;
                 self.alive = false;
                 kill_dir = Some(s.vel);
 
@@ -77,8 +77,8 @@ impl Enemy {
                 game.bg.chaos(&mut game.rng);
 
 
-                let angle = Normal::new(s.vel.angle() as f64, 40.0);
-                let speed = Normal::new(60.0, 12.0);
+                let angle = Normal::new(s.vel.angle() as f64, 40.0).unwrap();
+                let speed = Normal::new(60.0, 12.0).unwrap();
                 for _ in 0..DIE_SHARDS {
                     // let angle = 360.0 * (i as f32) / (DIE_SHARDS as f32);
                     game.particles.push(Particle {
@@ -133,6 +133,7 @@ impl Enemy {
             angular_vel: l * 0.1,
             shape: Shape::Circle(3.0),
             color: colors[self.life as usize % colors.len()],
+            ..Particle::default()
         }).collect()
     }
 }

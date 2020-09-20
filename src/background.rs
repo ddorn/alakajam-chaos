@@ -1,6 +1,7 @@
-use quicksilver::geom::{Vector, Circle, Triangle };
+use quicksilver::geom::Vector;
+#[allow(unused_imports)]
 use quicksilver::graphics::{Color, Graphics, Vertex, Mesh, Element};
-use rand::distributions::{Uniform, UnitCircle, Distribution};
+use rand_distr::*;
 use super::{XorShiftRng, SIZE};
 
 
@@ -17,7 +18,6 @@ impl BgPoint {
         let angle = Uniform::new(0.0, 360.0);
 
         self.pos += Vector::from_angle(angle.sample(rng)) * unif.sample(rng);
-        let angle = Uniform::new(0.0, 5.0);
         self.angle += unif.sample(rng);
     }
 
@@ -67,7 +67,7 @@ impl Background {
         }
     }
 
-    pub fn draw(&self, gfx: &mut Graphics, score: u32) {
+    pub fn draw(&self, gfx: &mut Graphics, _score: u32) {
         let pts : Vec<Vector> = self.points
             .iter()
             .map(|p| p.draw_pos())

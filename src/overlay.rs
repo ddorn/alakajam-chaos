@@ -1,7 +1,6 @@
-use quicksilver::geom::{Vector, Circle, Rectangle };
-use quicksilver::graphics::{Color, Graphics, Vertex, Mesh, Element, FontRenderer};
-use rand::distributions::{Uniform, UnitCircle, Distribution};
-use super::{XorShiftRng, SIZE, Particle, Shape};
+use quicksilver::geom::{Vector, Rectangle };
+use quicksilver::graphics::{Color, Graphics, FontRenderer};
+use super::{SIZE, Particle, Shape};
 
 pub struct Overlay {
     pub text: String,

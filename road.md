@@ -177,6 +177,13 @@ I hade a pause text appearing on the first frame, too much ugly text...
 Made some nice looking html/css to surround the game.
 
 ## 11:30 
+
+I started looking for a way to generate audio and found sfxr which
+looks perfect for the sound effect, making music seems harder though,
+plus I can't find a good create to play music on web.
+
+## 12:00
+
 But now it is time to implement powerups !
 
 
@@ -185,3 +192,4 @@ But now it is time to implement powerups !
 - Keep only important text, put colors and center what is needed
 - bg: add random triangles ?
 - music !
+- make the player shoot al direction on life losStandardStandardt
