@@ -30,6 +30,7 @@ use powerup::*;
 
 
 const SIZE: Vector = Vector { x: 1300.0, y: 800.0 };
+const POWERUP_DELAY: u32 = 20;
 
 // const BOOM_BYTES: &'static [u8] = include_bytes!("sound/boom.wav");
 // const LASER_BYTES: &'static [u8] = include_bytes!("sound/laser.wav");
@@ -265,7 +266,7 @@ impl Game {
                 if e.alive() {
                     Some(e)
                 } else {
-                    self.score += e.level;
+                    self.score += e.level * e.level;
                     None
                 }
             })
@@ -356,7 +357,7 @@ impl Game {
             pos.y = y.sample(&mut self.rng);
         }
 
-        let unif = Uniform::new_inclusive(1, 2*self.wave);
+        let unif = Uniform::new_inclusive(1, self.wave + 1);
         let life = unif.sample(&mut self.rng);
 
         self.enemies.push(
@@ -365,7 +366,7 @@ impl Game {
     }
 
     fn spawn_powerup(&mut self) {
-        let b = Bernoulli::from_ratio(1, 30 * 20).unwrap();
+        let b = Bernoulli::from_ratio(1, 30 * POWERUP_DELAY).unwrap();
         if b.sample(&mut self.rng) {
             let &p = vec![
                 Power::LifeUp,

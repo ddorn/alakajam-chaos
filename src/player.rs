@@ -6,7 +6,7 @@ use rand_xorshift::XorShiftRng;
 
 use super::{Particle, Shape, hsv2rgb, Shot, Power, Game};
 
-const SHOT_SPEED: f32 = 45.0;
+pub const SHOT_SPEED: f32 = 45.0;
 const SHOT_DELAY: u32 = 5;
 
 #[derive(Debug)]
@@ -108,10 +108,9 @@ impl Player {
 
         (0..7).map(|i| {
             let angle = 360.0 * i as f32 / 7.0;
-            Shot::new(
+            Shot::laser(
                 self.pos, 
-                Vector::from_angle(angle) * SHOT_SPEED,
-                self.pierce * 10,
+                angle, 
                 self.damage * 3,
             )
 

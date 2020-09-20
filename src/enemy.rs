@@ -7,8 +7,8 @@ use rand_xorshift::XorShiftRng;
 
 use super::{Particle, Shape, Game};
 
-const KNOCK_BACK: f32 = 40.0;
-const KNOCK_DAMP: f32 = 0.7;
+const KNOCK_BACK: f32 = 50.0;
+const KNOCK_DAMP: f32 = 0.8;
 const INVINCIBLE_FRAMES: f32 = 4.0;
 const DIE_SHARDS: usize = 3;
 
@@ -47,7 +47,7 @@ impl Enemy {
             speed: 0.0,
             angle: 0.0,
             level: level,
-            life: level as i32,
+            life: (level * level) as i32,
             radius: level as f32 * 5.0 + 30.0 ,
             knockback: knockback,
             color: color,
@@ -68,9 +68,10 @@ impl Enemy {
         let player_angle = player_dir.angle();
 
         let angular_diff = ((player_angle - self.angle) % 360.0 + 540.0) % 360.0 - 180.0;
-        self.angle = (self.angle + 0.05 * angular_diff) % 360.0;
+        self.angle = (self.angle + 0.09 * angular_diff) % 360.0;
 
-        self.speed = (self.speed + 0.4).min(8.0 - (self.life as f32).max(6.0) * 0.7);
+        self.speed = (self.speed + 0.4).min(4.0 + (self.level as f32));
+         
         let vel = Vector::from_angle(self.angle) * self.speed;
         self.pos += vel;
 
@@ -97,7 +98,7 @@ impl Enemy {
 
                     let angle = Normal::new(a as f64, 40.0).unwrap();
                     let speed = Normal::new(60.0, 12.0).unwrap();
-                    for _ in 0..dmg {
+                    for _ in 0..=dmg {
                         // let angle = 360.0 * (i as f32) / (DIE_SHARDS as f32);
                         game.particles.push(Particle {
                             pos: self.pos,
@@ -137,7 +138,7 @@ impl Enemy {
 
         let angle = Uniform::new(0.0, 360.0);
 
-        let l = self.life as f32 + self.level as f32;
+        let l = (self.life as f32).sqrt() + self.level as f32;
 
         let mut qte = density.floor() as i32;
         if Bernoulli::new((density - density.floor()) as f64).unwrap().sample(rng) {
