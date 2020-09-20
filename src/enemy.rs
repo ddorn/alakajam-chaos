@@ -94,11 +94,6 @@ impl Enemy {
             }
         }
 
-        // Generate particles
-        let density = 1 + (game.enemies.len() > 30) as i32;
-        game.particles.extend(self.particles(&mut game.rng, density));
-
-
         if !self.alive && self.life > 1 {
             let d = kill_dir.unwrap().angle();
             let dir1 = Vector::from_angle(d + 30.0) * KNOCK_BACK;
@@ -112,7 +107,7 @@ impl Enemy {
         }
     }
 
-    fn particles(&self, rng: &mut XorShiftRng, density: i32) -> Vec<Particle> {
+    pub fn particles(&self, rng: &mut XorShiftRng, density: i32) -> Vec<Particle> {
 
 
         let colors = vec![

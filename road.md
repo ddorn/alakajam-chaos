@@ -156,7 +156,15 @@ Let's start some polish, and add bright explosions when a blob dies.
 
 Shakes where quite easy to do, there is a built in transform applied to everything in quicksilver ! Let's try do do a background that is more and more chaotic as the score increases.
 
-## 23:30 Power ups
+# Day 2 - The last
+
+## 1:00 itch.io
+
+After a break I dedcided not to code but to upload my game on itch.io to see how it works. And it works very well, I'll even dare to say perfectly!
+
+## 2:00 Better pause/game over
+
+Last thing I want to do before going to sleep is a better text.
 
 
 # TODO: Polish

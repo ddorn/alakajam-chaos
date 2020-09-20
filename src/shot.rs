@@ -22,17 +22,11 @@ impl Shot {
         }
     }
 
-    pub fn update(&mut self, rng: &mut XorShiftRng) -> Vec<Particle> {
-        self.pos += self.vel;
-
-        self.alive = self.alive && in_screen(&self.pos);
-
-        // Generate particles
+    pub fn particles(&self, rng: &mut XorShiftRng) -> Vec<Particle> {
         // let angle = Normal::new(self.vel.angle() as f64 + 180.0, 10.0);
         let speed = Normal::new(15.0, 1.0);
-        // let angular_vel = Normal::new(4.0, 1.0);
-
-        (0..1).map(|_| Particle {
+        
+         (0..1).map(|_| Particle {
             pos: self.pos,
             speed: speed.sample(rng) as f32,
             angle: self.vel.angle(),
@@ -43,5 +37,11 @@ impl Shot {
             shape: Shape::Shard(1.0, 3.0, false),
             color: Color::RED,
         }).collect()
+        
     }
+    pub fn update(&mut self) {
+        self.pos += self.vel;
+
+        self.alive = self.alive && in_screen(&self.pos);
+   }
 }

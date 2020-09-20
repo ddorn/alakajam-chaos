@@ -15,6 +15,7 @@ mod player;
 mod shot;
 mod enemy;
 mod background;
+mod overlay;
 
 use colors::*;
 use particles::*;
@@ -22,6 +23,8 @@ use player::*;
 use shot::*;
 use enemy::*;
 use background::*;
+use overlay::*;
+
 
 const SIZE: Vector = Vector { x: 1300.0, y: 800.0 };
 
@@ -54,6 +57,7 @@ pub struct Game {
     score: u32,
     shake: i32,
     bg: Background,
+    overlay: Overlay,
 }
 
 impl Game {
@@ -74,6 +78,7 @@ impl Game {
             score: 0,
             frame: 0,
             shake: 0,
+            overlay: Overlay::pause(),
         }
     }
 
@@ -110,44 +115,25 @@ impl Game {
 Life: {}
 Enemies: {}
 Particles: {}
-Skip: {}", 
+Skip: {} - {}", 
                 self.score, 
                 "<3 ".repeat(self.player.life as usize),
                 self.enemies.len(),
                 self.particles.len(), 
                 render_skip,
+                prop,
             ), 
             Color::WHITE, 
             Vector::new(10.0, 50.0)
         ).unwrap();
 
-        if self.player.life == 0 {
-            self.font.draw(
-                gfx, 
-                &"GAME OVER", 
-                Color::RED, 
-                Vector::new(SIZE.x / 2.0 - 170.0, SIZE.y / 2.0),
-            ).unwrap();
-        } else if self.paused {
-            self.font.draw(
-                gfx, 
-                &"Paused !", 
-                Color::YELLOW, 
-                Vector::new(SIZE.x / 2.0 - 140.0, SIZE.y / 2.0),
-            ).unwrap();
-        }
+        self.overlay.draw(gfx, &mut self.font);
     }
 
     fn update(&mut self, mouse: Vector) {
         self.bg.update(self.score);
 
-        if self.paused { return; }
-        if self.player.life == 0 { return; }
-
-        self.frame += 1;
-
-        // Spawn enemies if needed
-        self.spawn_enemy();
+        // Generate particles
 
         // Update and remove dead particles
         // We do it first so particles added this frame can
@@ -157,9 +143,31 @@ Skip: {}",
             .filter_map(|p| if p.update() { Some(p.clone()) } else { None } )
             .collect();
 
+        self.particles.extend(self.overlay.particles());
+        for s in &self.shots {
+            self.particles.extend(s.particles(&mut self.rng));
+        }
+        self.particles.extend(self.player.particles(&mut self.rng));
+        let density = 1 + (self.enemies.len() > 30) as i32;
+        for e in &self.enemies {
+            self.particles.extend(e.particles(&mut self.rng, density));
+        }
+
+
+
+        if self.player.life == 0 { return; }
+        if self.paused { return; }
+
+        self.overlay.visible = false;
+
+        self.frame += 1;
+
+        // Spawn enemies if needed
+        self.spawn_enemy();
+
         // Update and remove shots
         for s in &mut self.shots {
-            self.particles.extend(s.update(&mut self.rng));
+            s.update()
         }
         self.shots = self.shots
             .iter()
@@ -188,6 +196,10 @@ Skip: {}",
 
         // Update the player
         Player::update(mouse, self);
+
+        if self.player.life == 0 {
+            self.overlay = Overlay::game_over();
+        }
     }
 
     fn event(&mut self, event: Event, input: &Input, mouse: Vector) {
@@ -202,7 +214,9 @@ Skip: {}",
             Event::KeyboardInput(e) => {
                 if e.is_down() {
                     match e.key() {
-                        Key::P => self.toggle_pause(),
+                        Key::P => {
+                            self.toggle_pause();
+                        },
                         Key::R => {
                             // Entities
                             self.player = Player::new();
@@ -223,7 +237,15 @@ Skip: {}",
     }
 
     fn toggle_pause(&mut self) {
-        self.paused = !self.paused;
+        
+        // No pause if dead
+        if self.player.life > 0 {
+            self.paused = !self.paused;
+        }
+        
+        if self.paused {
+            self.overlay = Overlay::pause();
+        }
     }
 
     fn spawn_enemy(&mut self) {
