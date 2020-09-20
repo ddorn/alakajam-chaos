@@ -74,19 +74,22 @@ impl Player {
         // Generate its particles
         let angle = Uniform::new(0.0, 360.0);
         let speed = Normal::new(10.0, 3.0).unwrap();
-        let hue = Normal::new(27.0, 3.0).unwrap();
 
-        (0..4).map(|_| Particle {
+        (0..7).map(|_| {
+            let a = angle.sample(rng);
+            
+            Particle {
             pos: self.pos,
             speed: speed.sample(rng) as f32,
-            angle: angle.sample(rng),
+            angle: a,
             accel: -1.5,
             // damp: 0.88,
             angular_vel: 25.0,
             shape: Shape::Circle(4.0),
-            color: hsv2rgb(hue.sample(rng) as f32, 1.0, 1.0),
+            alpha_scale: 20.0,
+            color: hsv2rgb(a, 1.0, 1.0),
             ..Particle::default()
-        }).collect()
+        }}).collect()
     }
 
     pub fn fire(&self, aim: Vector) -> Vec<Shot> {
