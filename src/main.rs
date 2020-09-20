@@ -63,7 +63,7 @@ pub struct Game {
 impl Game {
     fn new(font: FontRenderer) -> Self {
         let mut rng = XorShiftRng::from_seed([42; 16]);
-        Game { 
+        let mut g = Game { 
             bg: Background::new(&mut rng),
             bg_color: Color::from_hex("#020812"),
             rng: rng,
@@ -79,7 +79,10 @@ impl Game {
             frame: 0,
             shake: 0,
             overlay: Overlay::pause(),
-        }
+        };
+        g.overlay.visible = false;
+
+        g
     }
 
     /// Draw the entire game on the gfx. `prop` is the
@@ -108,24 +111,25 @@ impl Game {
             p.draw(gfx, prop);
         }
 
-        self.font.draw(
+        // Text
+
+        let pos = self.font.draw(
             gfx, 
-            &format!(
-                "Score: {}
-Life: {}
-Enemies: {}
-Particles: {}
-Skip: {} - {}", 
-                self.score, 
-                "<3 ".repeat(self.player.life as usize),
-                self.enemies.len(),
-                self.particles.len(), 
-                render_skip,
-                prop,
-            ), 
+            &"Score: ",
             Color::WHITE, 
             Vector::new(10.0, 50.0)
         ).unwrap();
+        self.font.draw(
+            gfx, 
+            &format!("{}", self.score), 
+            Color::YELLOW, 
+            Vector::new(pos.x + 36.0, 50.0)
+        ).unwrap();
+
+        let life = "<3".repeat(self.player.life);
+        self.font.draw(
+            gfx, &life, Color::RED, 
+            Vector::new(SIZE.x - life.len() as f32 * 36.0 - 10.0, 40.0)).unwrap();
 
         self.overlay.draw(gfx, &mut self.font);
     }

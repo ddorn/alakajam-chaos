@@ -36,13 +36,14 @@ impl Overlay {
         if !self.visible { return vec![]; }
 
         self.frame += 1;
+        let size = 12.0;
         let s = 50.0;
         if self.frame % 6 < 1 {
             vec![
                 Particle {
                     pos: Vector::new(0.0, (SIZE.y + self.height) / 2.0),
                     speed: s,
-                    shape: Shape::Shard(8.0 / s, 2.5, true),
+                    shape: Shape::Shard(size / s, 2.5, true),
                     color: self.color,
                     ..Particle::default()
                 }, 
@@ -50,7 +51,7 @@ impl Overlay {
                     pos: Vector::new(SIZE.x, (SIZE.y - self.height) / 2.0),
                     speed: s,
                     angle: 180.0,
-                    shape: Shape::Shard(8.0 / s, 2.5, true),
+                    shape: Shape::Shard(size / s, 2.5, true),
                     color: self.color,
                     ..Particle::default()
                 }, 
@@ -70,7 +71,7 @@ impl Overlay {
             Vector::new(0.0, SIZE.y / 2.0 - self.height / 2.0),
             Vector::new(SIZE.x, self.height),
         );
-        gfx.fill_rect(&rect, Color::BLACK.with_alpha(0.5));
+        gfx.fill_rect(&rect, Color::WHITE.with_alpha(0.2));
 
         font.draw(
             gfx, 

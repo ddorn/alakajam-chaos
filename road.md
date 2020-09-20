@@ -165,10 +165,11 @@ After a break I dedcided not to code but to upload my game on itch.io to see how
 ## 2:00 Better pause/game over
 
 Last thing I want to do before going to sleep is a better text.
+Wow that took me a long time, I'm proabably too exhausted to code well
+but it looks quite good !
 
 
 # TODO: Polish
-- Pause on dark bg, with yellow particles on each side
 - bg depending on the score
 - Better css for the help
 - Keep only important text, put colors and center what is needed
