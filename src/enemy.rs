@@ -1,6 +1,6 @@
 use quicksilver::{
-    geom::{Vector},
-    graphics::{Color},
+    geom::{Vector, Circle},
+    graphics::{Color, Graphics},
 };
 use rand_distr::*;
 use rand_xorshift::XorShiftRng;
@@ -22,6 +22,7 @@ pub struct Enemy {
     pub level: u32,
     life: i32,
     pub knockback: Vector,
+    color: Color,
 }
 
 impl Enemy {
@@ -30,6 +31,17 @@ impl Enemy {
     }
 
     pub fn new_kb(pos: Vector, level: u32, knockback: Vector) -> Self {
+        let colors = vec![
+            Color::PURPLE,
+            Color::INDIGO,
+            Color::MAGENTA,
+            Color::BLUE,
+            Color::GREEN,
+            Color::ORANGE,
+            Color::RED,
+        ];
+        let color = colors[level as usize % colors.len()];
+
         Enemy {
             pos: pos,
             speed: 0.0,
@@ -38,6 +50,7 @@ impl Enemy {
             life: level as i32,
             radius: level as f32 * 5.0 + 30.0 ,
             knockback: knockback,
+            color: color,
         }
     }
     
@@ -70,7 +83,8 @@ impl Enemy {
             for s in &mut game.shots {
                 if s.pierce > 0 && (s.pos - self.pos).len2() < (s.radius + self.radius).powi(2) {
                     s.pierce -= 1;
-                    self.life -= s.damage;
+                    let dmg = s.damage.min(self.life);
+                    self.life -= dmg;
 
                     let a = s.vel.angle();
                     hit_angle = Some(a);
@@ -83,7 +97,7 @@ impl Enemy {
 
                     let angle = Normal::new(a as f64, 40.0).unwrap();
                     let speed = Normal::new(60.0, 12.0).unwrap();
-                    for _ in 0..DIE_SHARDS {
+                    for _ in 0..dmg {
                         // let angle = 360.0 * (i as f32) / (DIE_SHARDS as f32);
                         game.particles.push(Particle {
                             pos: self.pos,
@@ -112,33 +126,40 @@ impl Enemy {
         }
     }
 
-    pub fn particles(&self, rng: &mut XorShiftRng, density: i32) -> Vec<Particle> {
+    pub fn draw(&self, gfx: &mut Graphics, prop: f32) {
+        gfx.fill_circle(
+            &Circle::new(self.pos, self.radius),
+            self.color.with_alpha(0.1)
+        );
+    }
 
-
-        let colors = vec![
-            Color::PURPLE,
-            Color::INDIGO,
-            Color::MAGENTA,
-            Color::BLUE,
-            Color::GREEN,
-            Color::ORANGE,
-            Color::RED,
-        ];
+    pub fn particles(&self, rng: &mut XorShiftRng, density: f32) -> Vec<Particle> {
 
         let angle = Uniform::new(0.0, 360.0);
 
         let l = self.life as f32 + self.level as f32;
 
-        (0..density).map(|_| Particle {
+        let mut qte = density.floor() as i32;
+        if Bernoulli::new((density - density.floor()) as f64).unwrap().sample(rng) {
+            qte += 1;
+        }
+
+        let speed = 5.0 + l;
+        let acc = -speed.powi(2) / (speed + 2.0 * self.radius);
+        let bias = Vector::from_angle(self.angle) * self.speed;
+
+        let v = (0..qte).map(|_| Particle {
             pos: self.pos,
-            speed: 5.0 + l * 1.0,
+            speed: speed,
             angle: angle.sample(rng),
-            damp: 1.0,
-            accel: -0.8 - l*0.1,
-            angular_vel: l * 0.1,
+            accel: acc,
+            bias: bias,
+            // angular_vel: l * 0.1,
             shape: Shape::Circle(3.0),
-            color: colors[self.level as usize % colors.len()],
+            color: self.color,
             ..Particle::default()
-        }).collect()
+        }).collect();
+
+        v
     }
 }

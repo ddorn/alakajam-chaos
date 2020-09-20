@@ -197,12 +197,14 @@ What I'll do:
  - Make them invincible on knockback
  - Damage powerup
 
+ ## 16:30 Add waves
+
+ 
+
 
 # TODO: Polish
-- Keep only important text, put colors and center what is needed
 - bg: add random triangles ?
 - music !
 - make the player shoot al direction on life losStandardStandardt
-- give life to enemies != level
 - make a boss fight => power up
 - look at the difficulty curve

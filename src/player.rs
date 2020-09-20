@@ -7,6 +7,7 @@ use rand_xorshift::XorShiftRng;
 use super::{Particle, Shape, hsv2rgb, Shot, Power, Game};
 
 const SHOT_SPEED: f32 = 45.0;
+const SHOT_DELAY: u32 = 5;
 
 #[derive(Debug)]
 pub struct Player {
@@ -17,6 +18,7 @@ pub struct Player {
     pub shots: i32,
     pub pierce: i32,
     pub damage: i32,
+    pub shoot_delay: u32,
 }
 
 
@@ -27,9 +29,10 @@ impl Player {
             life: 3,
             radius: 30.0,
             invincible: 0,
-            shots: 1,
-            pierce: 1,
-            damage: 1,
+            shots: 5,
+            pierce: 5,
+            damage: 5,
+            shoot_delay: SHOT_DELAY,
         }
     }
 
@@ -38,7 +41,7 @@ impl Player {
         // Move towards the cursor
         let dir = mouse - game.player.pos;
         let dist = dir.len();
-        if dist > 1.0 {
+        if dist > 4.0 {
             game.player.pos += dir * 0.2;
         }
 
@@ -54,6 +57,12 @@ impl Player {
                 }
             }
         }
+
+        // game.player.shoot_delay -= 1;
+        // if game.player.shoot_delay == 0 {
+        //     game.shots.extend(game.player.fire(mouse));
+        //     game.player.shoot_delay = SHOT_DELAY;
+        // }
     }
 
     pub fn particles(&self, rng: & mut  XorShiftRng) -> Vec<Particle> {
@@ -67,8 +76,8 @@ impl Player {
             pos: self.pos,
             speed: speed.sample(rng) as f32,
             angle: angle.sample(rng),
-            accel: -0.1,
-            damp: 0.88,
+            accel: -1.5,
+            // damp: 0.88,
             angular_vel: 25.0,
             shape: Shape::Circle(4.0),
             color: hsv2rgb(hue.sample(rng) as f32, 1.0, 1.0),

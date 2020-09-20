@@ -46,6 +46,17 @@ impl PowerUp {
         }
     }
 
+    pub fn new_fixed(power: Power, pos: Vector) -> Self {
+        PowerUp {
+            pos: pos,
+            power: power,
+            vel: Vector::ZERO,
+            hits: 1,
+            radius: 20.0,
+            t: 0.0,
+        }
+    }
+
     pub fn color(&self) -> Color {
         match self.power {
             Power::LifeUp => Color::from_hex("#26A65B"),

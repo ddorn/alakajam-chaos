@@ -30,6 +30,26 @@ impl Overlay {
             frame: 0,
         }
     }
+
+    pub fn powerup() -> Self {
+        Overlay {
+            text: String::from("Pick two"),
+            color: Color::GREEN,
+            visible:true,
+            height: 120.0,
+            frame: 0,
+        }
+    }
+
+    pub fn wave(nb: u32) -> Self {
+        Overlay {
+            text: format!("Wave {}", nb),
+            color: Color::ORANGE,
+            visible: true,
+            height: 120.0,
+            frame: 0,
+        }
+    }
     
     pub fn particles(&mut self) -> Vec<Particle> {
         if !self.visible { return vec![]; }

@@ -44,6 +44,15 @@ fn in_screen(pos: &Vector) -> bool {
 }
 
 
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+enum WaveState {
+    Ongoing,
+    WaitToEnd,
+    AnnoncePowerUp(u32),
+    PowerUp,
+    AnnounceWave(u32),
+}
+
 pub struct Game {
     // Utilities
     bg_color: Color,
@@ -60,6 +69,8 @@ pub struct Game {
     paused: bool,
     score: u32,
     shake: i32,
+    wave: u32,
+    wave_state: WaveState,
     bg: Background,
     overlay: Overlay,
 }
@@ -76,10 +87,12 @@ impl Game {
             particles: vec![],
             player: Player::new(),
             shots: vec![],
-            enemies: vec![ Enemy::new(Vector::ONE * -50.0, 5)],
+            enemies: vec![],
             powerups: vec![],
 
             paused: false,
+            wave: 4,
+            wave_state: WaveState::PowerUp,
             score: 0,
             frame: 0,
             shake: 0,
@@ -116,6 +129,10 @@ impl Game {
 
         // Particles and poweups
 
+        for e in &self.enemies {
+            e.draw(gfx, prop);
+        }
+
         for p in &self.particles {
             p.draw(gfx, prop);
         }
@@ -147,11 +164,7 @@ impl Game {
         self.overlay.draw(gfx, &mut self.font);
     }
 
-    fn update(&mut self, mouse: Vector) {
-        self.bg.update(self.score);
-
-        // Generate particles
-
+    fn collect_particles(&mut self) {
         // Update and remove dead particles
         // We do it first so particles added this frame can
         // be drawn where they spawn at least once
@@ -165,27 +178,64 @@ impl Game {
             self.particles.extend(s.particles(&mut self.rng));
         }
         self.particles.extend(self.player.particles(&mut self.rng));
-        let density = 1 + (self.enemies.len() > 30) as i32;
+        let density = (200.0 / (50 + self.enemies.len()) as f32).max(0.3);
         for e in &self.enemies {
             self.particles.extend(e.particles(&mut self.rng, density));
         }
         for p in &self.powerups {
             self.particles.extend(p.particles(&mut self.rng));
         }
+    }
 
+    fn update(&mut self, mouse: Vector) {
 
+        self.bg.update(self.score);
+        self.collect_particles();
 
         if self.player.life == 0 { return; }
         if self.paused { return; }
 
-
-        self.overlay.visible = false;
-
         self.frame += 1;
 
-        // Spawn enemies and powerups if needed
-        self.spawn_enemy();
-        self.spawn_powerup();
+        self.wave_state = if self.wave_state == WaveState::Ongoing && self.score > (4 as u32).pow(self.wave + 1) {
+            WaveState::WaitToEnd
+        } else if self.wave_state == WaveState::WaitToEnd && self.enemies.len() == 0 {
+            self.overlay = Overlay::powerup();
+            WaveState::AnnoncePowerUp(45)
+        } else if let WaveState::AnnoncePowerUp(t) = self.wave_state {
+            if t > 0 {
+                WaveState::AnnoncePowerUp(t-1)
+            } else {
+                self.overlay.visible = false;
+                self.powerups = vec![
+                    PowerUp::new_fixed(Power::DamageUp, SIZE.times(Vector::new(0.25, 0.25))),
+                    PowerUp::new_fixed(Power::LifeUp, SIZE.times(Vector::new(0.75, 0.25))),
+                    PowerUp::new_fixed(Power::PierceUp, SIZE.times(Vector::new(0.25, 0.75))),
+                    PowerUp::new_fixed(Power::ShotUp, SIZE.times(Vector::new(0.75, 0.75))),
+                ];
+                WaveState::PowerUp
+            }
+        } else if self.wave_state == WaveState::PowerUp && self.powerups.len() <= 2 {
+            self.wave += 1;
+            self.powerups = vec![];
+            self.overlay = Overlay::wave(self.wave);
+            WaveState::AnnounceWave(60)
+        } else if let WaveState::AnnounceWave(t) = self.wave_state {
+            if t > 0 {
+                WaveState::AnnounceWave(t-1)
+            } else {
+                self.overlay.visible = false;
+                WaveState::Ongoing
+            }
+        } else {
+            self.wave_state
+        };
+
+        if self.wave_state == WaveState::Ongoing {
+            // Spawn enemies and powerups if needed
+            self.spawn_enemy();
+            self.spawn_powerup();
+        }
 
         // Update and remove shots
         for s in &mut self.shots {
@@ -249,16 +299,7 @@ impl Game {
                             self.toggle_pause();
                         },
                         Key::R => {
-                            // Entities
-                            self.player = Player::new();
-                            self.enemies = vec![ Enemy::new(Vector::ONE * -50.0, 5)];
-                            self.shots = vec![];
-                            self.powerups = vec![];
-                            // General
-                            self.frame = 0;
-                            self.paused = false;
-                            self.score = 0;
-                            self.bg = Background::new(&mut self.rng);
+                            self.restart();
                         }
                         _ => (),
                     }
@@ -268,30 +309,48 @@ impl Game {
         }
     }
 
+    fn restart(&mut self) {
+        // Entities
+        self.player = Player::new();
+        self.enemies = vec![];
+        self.shots = vec![];
+        self.powerups = vec![];
+        // General
+        self.wave = 0;
+        self.wave_state = WaveState::PowerUp;
+        self.frame = 0;
+        self.paused = false;
+        self.score = 0;
+        self.bg = Background::new(&mut self.rng);
+    }
+
     fn toggle_pause(&mut self) {
         
         // No pause if dead
         if self.player.life > 0 {
             self.paused = !self.paused;
-        }
-        
-        if self.paused {
-            self.overlay = Overlay::pause();
+            
+            if self.paused {
+                self.overlay = Overlay::pause();
+            } else {
+                self.overlay.visible = false;
+            }
         }
     }
 
     fn spawn_enemy(&mut self) {
-        if self.frame % (42 + sqrti(self.score)) != 17 {return;}
+        if self.frame % 42 != 17 {return;}
 
         // Find a position out of the screen
-        let unif = Uniform::new(-500.0, 2000.0);
+        let x = Uniform::new(-100.0, SIZE.x + 100.0);
+        let y = Uniform::new(-100.0, SIZE.y + 100.0);
         let mut pos = Vector::ZERO;
         while in_screen(&pos) {
-            pos.x = unif.sample(&mut self.rng);
-            pos.y = unif.sample(&mut self.rng);
+            pos.x = x.sample(&mut self.rng);
+            pos.y = y.sample(&mut self.rng);
         }
 
-        let unif = Uniform::new_inclusive(1, (self.score as f64).sqrt() as usize / 4 + 2);
+        let unif = Uniform::new_inclusive(1, 2*self.wave);
         let life = unif.sample(&mut self.rng);
 
         self.enemies.push(
@@ -300,7 +359,7 @@ impl Game {
     }
 
     fn spawn_powerup(&mut self) {
-        let b = Bernoulli::from_ratio(1, 30 * 5).unwrap();
+        let b = Bernoulli::from_ratio(1, 30 * 60).unwrap();
         if b.sample(&mut self.rng) {
             let &p = vec![
                 Power::LifeUp,

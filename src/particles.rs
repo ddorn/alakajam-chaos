@@ -64,7 +64,7 @@ impl Particle {
                 gfx.fill_circle(
                     &Circle::new(
                         self.pos + Vector::from_angle(self.angle) * (self.speed * prop),
-                        size * self.speed.sqrt()), 
+                        size * self.speed / 3.3), 
                     self.color.with_alpha(self.speed / self.alpha_scale),
                 );
             }
